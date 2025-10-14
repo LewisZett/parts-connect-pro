@@ -79,8 +79,8 @@ const Matches = () => {
       .from("matches")
       .select(`
         *,
-        supplier:profiles!matches_supplier_id_fkey(full_name, trade_type),
-        requester:profiles!matches_requester_id_fkey(full_name, trade_type),
+        supplier:public_profiles!matches_supplier_id_fkey(full_name, trade_type),
+        requester:public_profiles!matches_requester_id_fkey(full_name, trade_type),
         parts(part_name, price),
         part_requests(part_name, max_price)
       `)
