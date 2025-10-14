@@ -59,13 +59,40 @@ const Browse = () => {
         ? { part_id: itemId, supplier_id: ownerId, requester_id: user.id }
         : { request_id: itemId, requester_id: ownerId, supplier_id: user.id };
 
-      const { error } = await supabase.from("matches").insert(matchData);
+      const { data: matchResult, error } = await supabase.from("matches").insert(matchData).select().single();
 
       if (error) throw error;
 
+      // Get the item name for notifications
+      let itemName = "Unknown Item";
+      if (type === "part") {
+        const part = parts.find(p => p.id === itemId);
+        itemName = part?.part_name || "Unknown Part";
+      } else {
+        const request = requests.find(r => r.id === itemId);
+        itemName = request?.part_name || "Unknown Request";
+      }
+
+      // Send notifications in background (don't await)
+      supabase.functions.invoke("send-match-notification", {
+        body: {
+          matchId: matchResult.id,
+          supplierId: matchData.supplier_id,
+          requesterId: matchData.requester_id,
+          itemName,
+          itemType: type,
+        },
+      }).then(({ error: notifError }) => {
+        if (notifError) {
+          console.error("Error sending notifications:", notifError);
+        } else {
+          console.log("Notifications sent successfully");
+        }
+      });
+
       toast({
         title: "Match Created!",
-        description: "You can now start chatting with this user.",
+        description: "Notifications sent. You can now start chatting with this user.",
       });
       navigate("/matches");
     } catch (error: any) {

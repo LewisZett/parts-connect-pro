@@ -197,6 +197,7 @@ export type Database = {
           full_name: string | null
           id: string
           is_verified: boolean | null
+          phone_number: string | null
           trade_type: string
           updated_at: string | null
         }
@@ -206,6 +207,7 @@ export type Database = {
           full_name?: string | null
           id: string
           is_verified?: boolean | null
+          phone_number?: string | null
           trade_type: string
           updated_at?: string | null
         }
@@ -215,6 +217,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_verified?: boolean | null
+          phone_number?: string | null
           trade_type?: string
           updated_at?: string | null
         }

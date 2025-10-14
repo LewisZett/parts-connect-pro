@@ -1,1 +1,4 @@
 project_id = "hxbemcmmnbxsvnmyzoee"
+
+[functions.send-match-notification]
+verify_jwt = true

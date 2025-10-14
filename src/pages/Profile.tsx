@@ -17,6 +17,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [fullName, setFullName] = useState("");
   const [tradeType, setTradeType] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -52,6 +53,7 @@ const Profile = () => {
       setProfile(data);
       setFullName(data.full_name || "");
       setTradeType(data.trade_type || "");
+      setPhoneNumber(data.phone_number || "");
     }
     setLoading(false);
   };
@@ -63,6 +65,7 @@ const Profile = () => {
         .update({
           full_name: fullName,
           trade_type: tradeType,
+          phone_number: phoneNumber || null,
         })
         .eq("id", user.id);
 
@@ -151,6 +154,19 @@ const Profile = () => {
                       </SelectContent>
                     </Select>
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phoneNumber">Phone Number (for WhatsApp notifications)</Label>
+                    <Input
+                      id="phoneNumber"
+                      type="tel"
+                      placeholder="+1234567890"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Enter in international format (e.g., +1234567890). Optional - used for WhatsApp notifications.
+                    </p>
+                  </div>
                   <div className="flex gap-2">
                     <Button onClick={handleUpdateProfile}>Save Changes</Button>
                     <Button variant="outline" onClick={() => setEditing(false)}>Cancel</Button>
@@ -165,6 +181,10 @@ const Profile = () => {
                   <div>
                     <Label className="text-muted-foreground">Trade Type</Label>
                     <p className="text-lg capitalize">{profile?.trade_type?.replace("_", " ")}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Phone Number</Label>
+                    <p className="text-lg">{profile?.phone_number || "Not set"}</p>
                   </div>
                   <div>
                     <Label className="text-muted-foreground">Verified</Label>
