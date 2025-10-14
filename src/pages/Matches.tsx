@@ -8,6 +8,14 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { MessageSquare, Check, X, Send } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { z } from "zod";
+
+const messageSchema = z.object({
+  content: z.string()
+    .min(1, "Message cannot be empty")
+    .max(2000, "Message must be less than 2000 characters")
+    .trim()
+});
 
 const Matches = () => {
   const [user, setUser] = useState<any>(null);
@@ -130,7 +138,18 @@ const Matches = () => {
   };
 
   const sendMessage = async () => {
-    if (!newMessage.trim() || !selectedMatch) return;
+    if (!selectedMatch) return;
+
+    // Validate message content
+    const validation = messageSchema.safeParse({ content: newMessage });
+    if (!validation.success) {
+      toast({
+        variant: "destructive",
+        title: "Invalid Message",
+        description: validation.error.errors[0].message,
+      });
+      return;
+    }
 
     try {
       const otherUserId = selectedMatch.supplier_id === user.id 
@@ -141,7 +160,7 @@ const Matches = () => {
         match_id: selectedMatch.id,
         sender_id: user.id,
         receiver_id: otherUserId,
-        content: newMessage.trim(),
+        content: validation.data.content,
       });
 
       if (error) throw error;
