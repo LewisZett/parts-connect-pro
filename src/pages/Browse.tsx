@@ -42,8 +42,8 @@ const Browse = () => {
   const fetchData = async () => {
     setLoading(true);
     const [partsResult, requestsResult] = await Promise.all([
-      supabase.from("parts").select("*, profiles(full_name, trade_type)").eq("status", "available"),
-      supabase.from("part_requests").select("*, profiles(full_name, trade_type)").eq("status", "active"),
+      supabase.from("parts").select("*, public_profiles(full_name, trade_type)").eq("status", "available"),
+      supabase.from("part_requests").select("*, public_profiles(full_name, trade_type)").eq("status", "active"),
     ]);
 
     if (partsResult.data) setParts(partsResult.data);
@@ -165,7 +165,7 @@ const Browse = () => {
                           <p className="text-2xl font-bold text-primary mb-3">${part.price}</p>
                         )}
                         <div className="text-sm text-muted-foreground mb-3">
-                          Listed by: {part.profiles?.full_name || "Anonymous"} ({part.profiles?.trade_type})
+                          Listed by: {part.public_profiles?.full_name || "Anonymous"} ({part.public_profiles?.trade_type})
                         </div>
                         {part.supplier_id !== user?.id && (
                           <Button
@@ -224,7 +224,7 @@ const Browse = () => {
                           </p>
                         )}
                         <div className="text-sm text-muted-foreground mb-3">
-                          Requested by: {request.profiles?.full_name || "Anonymous"} ({request.profiles?.trade_type})
+                          Requested by: {request.public_profiles?.full_name || "Anonymous"} ({request.public_profiles?.trade_type})
                         </div>
                         {request.requester_id !== user?.id && (
                           <Button
