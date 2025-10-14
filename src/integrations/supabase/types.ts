@@ -260,7 +260,30 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          created_at: string | null
+          full_name: string | null
+          id: string | null
+          is_verified: boolean | null
+          trade_type: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          is_verified?: boolean | null
+          trade_type?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          is_verified?: boolean | null
+          trade_type?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
