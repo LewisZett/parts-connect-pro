@@ -1,4 +1,10 @@
 project_id = "hxbemcmmnbxsvnmyzoee"
 
 [functions.send-match-notification]
+verify_jwt = false
+
+[functions.ai-match-parts]
+verify_jwt = true
+
+[functions.parse-parts-pdf]
 verify_jwt = true

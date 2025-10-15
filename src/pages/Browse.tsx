@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
+import { AiMatchSuggestions } from "@/components/AiMatchSuggestions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -195,12 +196,19 @@ const Browse = () => {
                           Listed by: {part.public_profiles?.full_name || "Anonymous"} ({part.public_profiles?.trade_type})
                         </div>
                         {part.supplier_id !== user?.id && (
-                          <Button
-                            className="w-full"
-                            onClick={() => handleCreateMatch("part", part.id, part.supplier_id)}
-                          >
-                            Contact Supplier
-                          </Button>
+                          <>
+                            <Button
+                              className="w-full mb-2"
+                              onClick={() => handleCreateMatch("part", part.id, part.supplier_id)}
+                            >
+                              Contact Supplier
+                            </Button>
+                            <AiMatchSuggestions 
+                              itemId={part.id} 
+                              itemType="part" 
+                              itemData={part}
+                            />
+                          </>
                         )}
                       </CardContent>
                     </Card>
@@ -254,12 +262,19 @@ const Browse = () => {
                           Requested by: {request.public_profiles?.full_name || "Anonymous"} ({request.public_profiles?.trade_type})
                         </div>
                         {request.requester_id !== user?.id && (
-                          <Button
-                            className="w-full"
-                            onClick={() => handleCreateMatch("request", request.id, request.requester_id)}
-                          >
-                            I Have This Part
-                          </Button>
+                          <>
+                            <Button
+                              className="w-full mb-2"
+                              onClick={() => handleCreateMatch("request", request.id, request.requester_id)}
+                            >
+                              I Have This Part
+                            </Button>
+                            <AiMatchSuggestions 
+                              itemId={request.id} 
+                              itemType="request" 
+                              itemData={request}
+                            />
+                          </>
                         )}
                       </CardContent>
                     </Card>
