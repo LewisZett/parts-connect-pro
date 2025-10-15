@@ -56,7 +56,7 @@ export const TextBulkUpload = () => {
       console.error('Error parsing text:', error);
       toast({
         title: 'Parsing failed',
-        description: error.message,
+        description: error.message || 'Failed to parse parts list. Please check your format and try again.',
         variant: 'destructive',
       });
     } finally {

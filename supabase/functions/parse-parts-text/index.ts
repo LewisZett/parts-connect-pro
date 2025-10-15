@@ -44,21 +44,24 @@ serve(async (req) => {
             content: `Extract all parts from this text. For each part, identify:
 - part_name (the name/model of the part)
 - category (classify as: electrical, plumbing, hvac, structural, roofing, flooring, doors, windows, or other)
-- condition (new, like-new, used-good, used-fair, or for-parts)
+- condition (MUST be exactly one of: "new", "used", or "refurbished")
 - price (numeric value only, extract from text if mentioned)
 - description (any additional details)
 
 Be flexible with text formats:
 - Handle bullet points, numbered lists, comma-separated, or paragraph format
 - Extract prices from various formats ($100, 100 USD, "one hundred dollars")
-- Infer condition from context words like "brand new", "slightly used", etc.
+- Infer condition from context:
+  * "brand new", "new", "unused" → "new"
+  * "like new", "refurbished", "renewed" → "refurbished"
+  * "used", "pre-owned", "second hand" → "used"
 - If multiple parts are on one line separated by commas or semicolons, split them
 
 Return ONLY a JSON array in this exact format:
-[{"part_name": "string", "category": "string", "condition": "string", "price": number, "description": "string"}]
+[{"part_name": "string", "category": "string", "condition": "new|used|refurbished", "price": number, "description": "string"}]
 
 Use defaults when fields aren't specified:
-- condition: "used-good"
+- condition: "used"
 - description: ""
 - price: 0
 
@@ -114,7 +117,8 @@ ${text}`
 
     if (insertError) {
       console.error('Insert error:', insertError);
-      throw new Error(`Failed to insert parts: ${insertError.message}`);
+      console.error('Failed parts data:', JSON.stringify(partsToInsert.slice(0, 3), null, 2));
+      throw new Error(`Failed to insert parts: ${insertError.message}. Please check that all parts have valid condition values (new, used, or refurbished).`);
     }
 
     console.log('Successfully inserted', insertedParts.length, 'parts');
