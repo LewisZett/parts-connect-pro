@@ -93,8 +93,8 @@ const Dashboard = () => {
 
             <Card className="hover:shadow-medium transition-shadow cursor-pointer" onClick={() => navigate("/matches")}>
               <CardHeader>
-                <div className="h-12 w-12 rounded-lg bg-green-500/10 flex items-center justify-center mb-4">
-                  <MessageSquare className="h-6 w-6 text-green-600" />
+                <div className="h-12 w-12 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+                  <MessageSquare className="h-6 w-6 text-accent" />
                 </div>
                 <CardTitle>Matches & Messages</CardTitle>
                 <CardDescription>
@@ -110,8 +110,8 @@ const Dashboard = () => {
 
             <Card className="hover:shadow-medium transition-shadow">
               <CardHeader>
-                <div className="h-12 w-12 rounded-lg bg-orange-500/10 flex items-center justify-center mb-4">
-                  <TrendingUp className="h-6 w-6 text-orange-600" />
+                <div className="h-12 w-12 rounded-lg bg-secondary/50 flex items-center justify-center mb-4">
+                  <TrendingUp className="h-6 w-6 text-foreground" />
                 </div>
                 <CardTitle>Getting Started</CardTitle>
                 <CardDescription>

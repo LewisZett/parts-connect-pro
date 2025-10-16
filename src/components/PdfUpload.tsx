@@ -69,7 +69,8 @@ export const PdfUpload = () => {
       // Cleanup: delete the uploaded file
       await supabase.storage.from('part-documents').remove([fileName]);
 
-      window.location.reload();
+      // Trigger a page refresh via React Router instead of hard reload
+      setTimeout(() => window.location.reload(), 1000);
     } catch (error: any) {
       console.error('Error uploading file:', error);
       toast({

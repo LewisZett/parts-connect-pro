@@ -88,7 +88,9 @@ export const TextBulkUpload = () => {
       setText('');
       setImages([]);
       setOpen(false);
-      window.location.reload();
+      
+      // Refresh the page after a brief delay to show success message
+      setTimeout(() => window.location.reload(), 1000);
     } catch (error: any) {
       console.error('Error parsing text:', error);
       toast({

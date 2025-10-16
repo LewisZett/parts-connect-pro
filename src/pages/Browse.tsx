@@ -167,6 +167,15 @@ const Browse = () => {
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredParts.map((part) => (
                     <Card key={part.id} className="hover:shadow-medium transition-shadow">
+                      {part.image_url && (
+                        <div className="w-full h-48 overflow-hidden rounded-t-lg">
+                          <img 
+                            src={part.image_url} 
+                            alt={part.part_name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
                       <CardHeader>
                         <div className="flex items-start justify-between mb-2">
                           <CardTitle className="text-lg">{part.part_name}</CardTitle>

@@ -169,6 +169,12 @@ const MyListings = () => {
   };
 
   const handleDelete = async (type: "part" | "request", id: string) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete this ${type}? This action cannot be undone.`
+    );
+    
+    if (!confirmed) return;
+
     try {
       const table = type === "part" ? "parts" : "part_requests";
       const { error } = await supabase.from(table).delete().eq("id", id);
@@ -297,6 +303,15 @@ const MyListings = () => {
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {myParts.map((part) => (
                   <Card key={part.id}>
+                    {part.image_url && (
+                      <div className="w-full h-48 overflow-hidden rounded-t-lg">
+                        <img 
+                          src={part.image_url} 
+                          alt={part.part_name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
                     <CardHeader>
                       <CardTitle className="text-lg">{part.part_name}</CardTitle>
                       <CardDescription>{part.category} - {part.condition}</CardDescription>
@@ -304,6 +319,7 @@ const MyListings = () => {
                     <CardContent>
                       {part.description && <p className="text-sm mb-2">{part.description}</p>}
                       {part.price && <p className="text-xl font-bold text-primary mb-2">${part.price}</p>}
+                      {part.location && <p className="text-xs text-muted-foreground mb-2">📍 {part.location}</p>}
                       <p className="text-xs text-muted-foreground mb-3">Status: {part.status}</p>
                       <Button
                         variant="destructive"

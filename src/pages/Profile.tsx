@@ -18,6 +18,7 @@ const Profile = () => {
   const [fullName, setFullName] = useState("");
   const [tradeType, setTradeType] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [stats, setStats] = useState({ parts: 0, requests: 0, matches: 0 });
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -43,18 +44,27 @@ const Profile = () => {
 
   const fetchProfile = async (userId: string) => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .single();
+    
+    const [profileResult, partsResult, requestsResult, matchesResult] = await Promise.all([
+      supabase.from("profiles").select("*").eq("id", userId).single(),
+      supabase.from("parts").select("id", { count: "exact" }).eq("supplier_id", userId),
+      supabase.from("part_requests").select("id", { count: "exact" }).eq("requester_id", userId),
+      supabase.from("matches").select("id", { count: "exact" }).or(`supplier_id.eq.${userId},requester_id.eq.${userId}`)
+    ]);
 
-    if (data) {
-      setProfile(data);
-      setFullName(data.full_name || "");
-      setTradeType(data.trade_type || "");
-      setPhoneNumber(data.phone_number || "");
+    if (profileResult.data) {
+      setProfile(profileResult.data);
+      setFullName(profileResult.data.full_name || "");
+      setTradeType(profileResult.data.trade_type || "");
+      setPhoneNumber(profileResult.data.phone_number || "");
     }
+
+    setStats({
+      parts: partsResult.count || 0,
+      requests: requestsResult.count || 0,
+      matches: matchesResult.count || 0
+    });
+
     setLoading(false);
   };
 
@@ -209,19 +219,19 @@ const Profile = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Parts Listed</p>
-                  <p className="text-2xl font-bold">0</p>
+                  <p className="text-2xl font-bold text-primary">{stats.parts}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Requests Made</p>
-                  <p className="text-2xl font-bold">0</p>
+                  <p className="text-2xl font-bold text-accent">{stats.requests}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Matches</p>
-                  <p className="text-2xl font-bold">0</p>
+                  <p className="text-2xl font-bold text-foreground">{stats.matches}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Rating</p>
-                  <p className="text-2xl font-bold">N/A</p>
+                  <p className="text-2xl font-bold text-muted-foreground">N/A</p>
                 </div>
               </div>
             </CardContent>
