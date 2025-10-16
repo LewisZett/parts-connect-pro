@@ -3,8 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, Loader2, Sparkles } from 'lucide-react';
+import { FileText, Loader2, Sparkles, ImagePlus, X } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
@@ -16,17 +17,37 @@ import {
 
 export const TextBulkUpload = () => {
   const [text, setText] = useState('');
+  const [images, setImages] = useState<File[]>([]);
   const [processing, setProcessing] = useState(false);
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validImages = files.filter(file => file.type.startsWith('image/'));
+    
+    if (validImages.length !== files.length) {
+      toast({
+        title: 'Invalid files',
+        description: 'Only image files are allowed',
+        variant: 'destructive',
+      });
+    }
+    
+    setImages(prev => [...prev, ...validImages]);
+  };
+
+  const removeImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!text.trim()) {
+    if (!text.trim() && images.length === 0) {
       toast({
         title: 'Empty input',
-        description: 'Please paste your parts list',
+        description: 'Please paste your parts list or upload images',
         variant: 'destructive',
       });
       return;
@@ -38,8 +59,23 @@ export const TextBulkUpload = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
+      // Convert images to base64
+      const imageData = await Promise.all(
+        images.map(async (file) => {
+          const reader = new FileReader();
+          return new Promise<string>((resolve) => {
+            reader.onload = (e) => resolve(e.target?.result as string);
+            reader.readAsDataURL(file);
+          });
+        })
+      );
+
       const { data, error } = await supabase.functions.invoke('parse-parts-text', {
-        body: { text, userId: user.id },
+        body: { 
+          text: text.trim() || undefined, 
+          images: imageData.length > 0 ? imageData : undefined,
+          userId: user.id 
+        },
       });
 
       if (error) throw error;
@@ -50,6 +86,7 @@ export const TextBulkUpload = () => {
       });
 
       setText('');
+      setImages([]);
       setOpen(false);
       window.location.reload();
     } catch (error: any) {
@@ -84,9 +121,9 @@ export const TextBulkUpload = () => {
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Paste Your Parts List</DialogTitle>
+          <DialogTitle>Add Parts with Text or Images</DialogTitle>
           <DialogDescription>
-            Paste your parts in any format - lists, paragraphs, or tables. AI will extract and organize them.
+            Paste your parts list or upload images. AI will identify parts from pictures and suggest names.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -95,11 +132,51 @@ export const TextBulkUpload = () => {
               placeholder="Example:&#10;- 2x4 lumber, $5 each, new condition&#10;- Used copper pipes, 10ft, $50&#10;- Drywall sheets (4x8), like new, $15/sheet&#10;&#10;Or just paste your list in any format..."
               value={text}
               onChange={(e) => setText(e.target.value)}
-              className="min-h-[300px] font-mono text-sm"
+              className="min-h-[200px] font-mono text-sm"
               disabled={processing}
             />
             <p className="text-xs text-muted-foreground mt-2">
               Tip: Include prices, conditions, and descriptions for better results
+            </p>
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium flex items-center gap-2">
+              <ImagePlus className="w-4 h-4" />
+              Upload Part Images (AI will identify them)
+            </label>
+            <Input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleImageSelect}
+              disabled={processing}
+              className="cursor-pointer"
+            />
+            {images.length > 0 && (
+              <div className="grid grid-cols-3 gap-2 mt-2">
+                {images.map((image, index) => (
+                  <div key={index} className="relative group">
+                    <img
+                      src={URL.createObjectURL(image)}
+                      alt={`Part ${index + 1}`}
+                      className="w-full h-24 object-cover rounded border"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => removeImage(index)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Upload images of parts you don't know the name of - AI will identify them
             </p>
           </div>
           <div className="flex gap-2">
@@ -108,6 +185,7 @@ export const TextBulkUpload = () => {
               variant="outline"
               onClick={() => {
                 setText('');
+                setImages([]);
                 setOpen(false);
               }}
               disabled={processing}
@@ -117,7 +195,7 @@ export const TextBulkUpload = () => {
             </Button>
             <Button
               type="submit"
-              disabled={processing || !text.trim()}
+              disabled={processing || (!text.trim() && images.length === 0)}
               className="flex-1"
             >
               {processing ? (

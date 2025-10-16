@@ -43,7 +43,17 @@ serve(async (req) => {
       sourceData = request;
       candidateData = parts;
 
-      prompt = `You are an expert at matching construction part requests with available parts.
+      // Build messages with potential images
+      const messages: any[] = [
+        { 
+          role: 'system', 
+          content: 'You are an expert parts matching assistant. Analyze text descriptions and images to find the best matches. Always respond with valid JSON only.' 
+        }
+      ];
+
+      const userContent: any[] = [{
+        type: 'text',
+        text: `You are an expert at matching construction part requests with available parts.
 
 Request Details:
 - Part Name: ${request.part_name}
@@ -61,6 +71,7 @@ ${i + 1}. ${p.part_name} (ID: ${p.id})
    - Price: $${p.price || 'Not listed'}
    - Location: ${p.location || 'Not specified'}
    - Description: ${p.description || 'None'}
+   - Has Image: ${p.image_url ? 'Yes' : 'No'}
    - Supplier: ${p.profiles?.full_name || 'Unknown'} (${p.profiles?.trade_type || 'general'})
 `).join('\n')}
 
@@ -71,10 +82,35 @@ Analyze these parts and return the top 5 best matches. Consider:
 4. Condition match
 5. Location proximity
 6. Description relevance
-7. Supplier reputation
+7. Visual similarity if images are available
+8. Supplier reputation
 
 Return ONLY a JSON array of matched part IDs with scores and reasons, ordered by match quality (best first).
-Format: [{"id": "uuid", "score": 0-100, "reason": "brief explanation"}]`;
+Format: [{"id": "uuid", "score": 0-100, "reason": "brief explanation"}]`
+      }];
+
+      // Add images of available parts for visual matching
+      const partsWithImages = parts?.filter((p: any) => p.image_url) || [];
+      if (partsWithImages.length > 0) {
+        userContent.push({
+          type: 'text',
+          text: `\n\nHere are images of the available parts for visual comparison:`
+        });
+        
+        for (const part of partsWithImages.slice(0, 5)) {
+          userContent.push({
+            type: 'text',
+            text: `\nPart: ${part.part_name} (ID: ${part.id})`
+          });
+          userContent.push({
+            type: 'image_url',
+            image_url: { url: part.image_url }
+          });
+        }
+      }
+
+      messages.push({ role: 'user', content: userContent });
+      prompt = messages;
     } else {
       // Find matches for an available part
       const { data: part } = await supabase
@@ -91,7 +127,17 @@ Format: [{"id": "uuid", "score": 0-100, "reason": "brief explanation"}]`;
       sourceData = part;
       candidateData = requests;
 
-      prompt = `You are an expert at matching available construction parts with part requests.
+      // Build messages with potential images
+      const messages: any[] = [
+        { 
+          role: 'system', 
+          content: 'You are an expert parts matching assistant. Analyze text descriptions and images to find the best matches. Always respond with valid JSON only.' 
+        }
+      ];
+
+      const userContent: any[] = [{
+        type: 'text',
+        text: `You are an expert at matching available construction parts with part requests.
 
 Available Part:
 - Part Name: ${part.part_name}
@@ -100,6 +146,7 @@ Available Part:
 - Price: $${part.price || 'Not listed'}
 - Location: ${part.location || 'Not specified'}
 - Description: ${part.description || 'None'}
+- Has Image: ${part.image_url ? 'Yes' : 'No'}
 
 Part Requests:
 ${requests?.map((r: any, i: number) => `
@@ -119,10 +166,27 @@ Analyze these requests and return the top 5 best matches. Consider:
 4. Condition match
 5. Location proximity
 6. Description relevance
-7. Buyer seriousness
+7. Visual appearance if image is available
+8. Buyer seriousness
 
 Return ONLY a JSON array of matched request IDs with scores and reasons, ordered by match quality (best first).
-Format: [{"id": "uuid", "score": 0-100, "reason": "brief explanation"}]`;
+Format: [{"id": "uuid", "score": 0-100, "reason": "brief explanation"}]`
+      }];
+
+      // Add image of the part for visual matching
+      if (part.image_url) {
+        userContent.push({
+          type: 'text',
+          text: `\n\nHere is an image of the available part for visual reference:`
+        });
+        userContent.push({
+          type: 'image_url',
+          image_url: { url: part.image_url }
+        });
+      }
+
+      messages.push({ role: 'user', content: userContent });
+      prompt = messages;
     }
 
     console.log('Calling Lovable AI for matching...');
@@ -134,7 +198,7 @@ Format: [{"id": "uuid", "score": 0-100, "reason": "brief explanation"}]`;
       },
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
-        messages: [
+        messages: Array.isArray(prompt) ? prompt : [
           { role: 'system', content: 'You are an expert parts matching assistant. Always respond with valid JSON only.' },
           { role: 'user', content: prompt }
         ],

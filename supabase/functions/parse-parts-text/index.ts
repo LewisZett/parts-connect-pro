@@ -12,8 +12,8 @@ serve(async (req) => {
   }
 
   try {
-    const { text, userId } = await req.json();
-    console.log('Parsing text parts list for user:', userId);
+    const { text, images, userId } = await req.json();
+    console.log('Parsing parts list for user:', userId, { hasText: !!text, imageCount: images?.length || 0 });
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -25,23 +25,21 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    console.log('Calling Lovable AI for text parsing...');
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an expert at extracting structured data from construction parts lists. Parse the text and return valid JSON only.'
-          },
-          {
-            role: 'user',
-            content: `Extract all parts from this text. For each part, identify:
+    // Build messages for AI
+    const messages: any[] = [
+      {
+        role: 'system',
+        content: 'You are an expert at identifying construction parts from text descriptions and images. For images, carefully analyze what part is shown and provide its technical name. Parse the data and return valid JSON only.'
+      }
+    ];
+
+    // Build user message content
+    const userContent: any[] = [];
+    
+    if (text) {
+      userContent.push({
+        type: 'text',
+        text: `Extract all parts from this text. For each part, identify:
 - part_name (the name/model of the part)
 - category (classify as: electrical, plumbing, hvac, structural, roofing, flooring, doors, windows, or other)
 - condition (MUST be exactly one of: "new", "used", or "refurbished")
@@ -67,8 +65,46 @@ Use defaults when fields aren't specified:
 
 Text to parse:
 ${text}`
-          }
-        ],
+      });
+    }
+
+    if (images && images.length > 0) {
+      userContent.push({
+        type: 'text',
+        text: `\n\nAnalyze these ${images.length} image(s) of construction parts. For each image:
+1. Identify the part shown (be specific - include type, material, size if visible)
+2. Suggest a technical part_name based on what you see
+3. Classify the category
+4. Assess the condition from the image (new/used/refurbished)
+5. Note any visible details for the description
+
+Return parts from images in the same JSON format.`
+      });
+
+      // Add images
+      for (const imageData of images) {
+        userContent.push({
+          type: 'image_url',
+          image_url: { url: imageData }
+        });
+      }
+    }
+
+    messages.push({
+      role: 'user',
+      content: userContent
+    });
+
+    console.log('Calling Lovable AI for parsing...');
+    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${lovableApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages,
         temperature: 0.2,
       }),
     });
@@ -96,17 +132,49 @@ ${text}`
     console.log('Parsed parts:', parts.length);
 
     if (!Array.isArray(parts) || parts.length === 0) {
-      throw new Error('No parts could be extracted from the text');
+      throw new Error('No parts could be extracted');
+    }
+
+    // Upload images to storage if provided
+    let uploadedImageUrls: string[] = [];
+    if (images && images.length > 0) {
+      console.log('Uploading', images.length, 'images to storage...');
+      
+      for (let i = 0; i < images.length; i++) {
+        const imageData = images[i];
+        const base64Data = imageData.split(',')[1];
+        const buffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+        
+        const fileName = `${userId}/${Date.now()}-${i}.jpg`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('part-images')
+          .upload(fileName, buffer, {
+            contentType: 'image/jpeg',
+            upsert: false
+          });
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+        } else {
+          const { data: urlData } = supabase.storage
+            .from('part-images')
+            .getPublicUrl(fileName);
+          uploadedImageUrls.push(urlData.publicUrl);
+        }
+      }
+      console.log('Uploaded', uploadedImageUrls.length, 'images');
     }
 
     // Insert parts into database
-    const partsToInsert = parts.map((part: any) => ({
+    const partsToInsert = parts.map((part: any, index: number) => ({
       supplier_id: userId,
       part_name: part.part_name,
       category: part.category,
       condition: part.condition,
       price: part.price || null,
       description: part.description || '',
+      image_url: uploadedImageUrls[index] || null,
       status: 'available'
     }));
 
