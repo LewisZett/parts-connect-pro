@@ -28,10 +28,37 @@ serve(async (req) => {
     
     console.log("Sending match notifications:", { matchId, supplierId, requesterId, itemName, itemType });
 
-    // Create Supabase client
+    // Verify authentication
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      throw new Error("Unauthorized: Missing authorization header");
+    }
+
+    // Create Supabase client with the user's JWT for authorization
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Get authenticated user
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      console.error("Authentication error:", authError);
+      throw new Error("Unauthorized: Invalid token");
+    }
+
+    // Verify user is part of this match
+    if (user.id !== supplierId && user.id !== requesterId) {
+      console.error("Authorization failed: User not part of match", { 
+        userId: user.id, 
+        supplierId, 
+        requesterId 
+      });
+      throw new Error("Unauthorized: You are not part of this match");
+    }
+
+    console.log("Authorization successful:", { userId: user.id });
 
     // Fetch both users' profiles
     const { data: profiles, error: profileError } = await supabase

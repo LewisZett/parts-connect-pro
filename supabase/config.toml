@@ -1,7 +1,7 @@
 project_id = "hxbemcmmnbxsvnmyzoee"
 
 [functions.send-match-notification]
-verify_jwt = false
+verify_jwt = true
 
 [functions.ai-match-parts]
 verify_jwt = true
