@@ -60,10 +60,7 @@ const Dashboard = () => {
 
 
           <Card className="bg-gradient-to-br from-card/50 to-card/30 border-primary/30 glass-card">
-            <CardHeader>
-              <CardTitle className="text-primary text-center text-3xl">MISSION PROTOCOL</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 pt-6">
               <div className="flex items-start space-x-4 group">
                 <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-accent text-primary-foreground flex items-center justify-center flex-shrink-0 font-bold glow-cyan group-hover:scale-110 transition-transform">
                   1
