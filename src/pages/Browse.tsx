@@ -119,10 +119,10 @@ const Browse = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <div className="h-16 w-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4 glow-cyan"></div>
+          <p className="text-primary font-orbitron text-xl">LOADING...</p>
         </div>
       </div>
     );
@@ -134,61 +134,66 @@ const Browse = () => {
       
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-bold mb-2">Browse Parts & Requests</h1>
-          <p className="text-muted-foreground mb-6">
-            Find what you need or discover who needs what you have
+          <h1 className="text-5xl font-bold mb-2 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent text-center">BROWSE MARKET</h1>
+          <p className="text-foreground/80 mb-6 text-center font-rajdhani text-lg">
+            DISCOVER • CONNECT • TRADE
           </p>
 
           <div className="mb-6 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-primary" />
             <Input
-              placeholder="Search by part name or category..."
+              placeholder="SEARCH BY PART OR CATEGORY..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 border-primary/30 focus:border-primary bg-card/50 font-rajdhani"
             />
           </div>
 
           <Tabs defaultValue="parts" className="space-y-6">
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">
-              <TabsTrigger value="parts">Available Parts ({filteredParts.length})</TabsTrigger>
-              <TabsTrigger value="requests">Part Requests ({filteredRequests.length})</TabsTrigger>
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 bg-card/50 border border-primary/30">
+              <TabsTrigger value="parts" className="font-orbitron data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                PARTS ({filteredParts.length})
+              </TabsTrigger>
+              <TabsTrigger value="requests" className="font-orbitron data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+                REQUESTS ({filteredRequests.length})
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="parts" className="space-y-4">
               {filteredParts.length === 0 ? (
-                <Card>
+                <Card className="glass-card">
                   <CardContent className="flex flex-col items-center justify-center py-12">
-                    <Package className="h-16 w-16 text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">No parts found matching your search</p>
+                    <Package className="h-16 w-16 text-primary mb-4 glow-cyan" />
+                    <p className="text-foreground/70 font-rajdhani text-lg">NO PARTS FOUND</p>
                   </CardContent>
                 </Card>
               ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredParts.map((part) => (
-                    <Card key={part.id} className="hover:shadow-medium transition-shadow">
+                    <Card key={part.id} className="hover:scale-[1.02] transition-transform glass-card glow-cyan">
                       {part.image_url && (
-                        <div className="w-full h-48 overflow-hidden rounded-t-lg">
+                        <div className="w-full h-48 overflow-hidden rounded-t-lg relative">
                           <img 
                             src={part.image_url} 
                             alt={part.part_name}
                             className="w-full h-full object-cover"
                           />
+                          <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent"></div>
                         </div>
                       )}
                       <CardHeader>
                         <div className="flex items-start justify-between mb-2">
-                          <CardTitle className="text-lg">{part.part_name}</CardTitle>
-                          <Badge variant="secondary">{part.condition}</Badge>
+                          <CardTitle className="text-lg text-primary font-orbitron">{part.part_name}</CardTitle>
+                          <Badge variant="secondary" className="bg-secondary/20 text-secondary border border-secondary/40">{part.condition}</Badge>
                         </div>
                         <CardDescription className="space-y-1">
-                          <div className="flex items-center text-sm">
-                            <Package className="h-4 w-4 mr-1" />
+                          <div className="flex items-center text-sm text-foreground/70">
+                            <Package className="h-4 w-4 mr-1 text-primary" />
                             {part.category}
                           </div>
                           {part.location && (
-                            <div className="flex items-center text-sm">
-                              <MapPin className="h-4 w-4 mr-1" />
+                            <div className="flex items-center text-sm text-foreground/70">
+                              <MapPin className="h-4 w-4 mr-1 text-accent" />
                               {part.location}
                             </div>
                           )}
@@ -196,13 +201,13 @@ const Browse = () => {
                       </CardHeader>
                       <CardContent>
                         {part.description && (
-                          <p className="text-sm text-muted-foreground mb-3">{part.description}</p>
+                          <p className="text-sm text-foreground/70 mb-3 font-rajdhani">{part.description}</p>
                         )}
                         {part.price && (
-                          <p className="text-2xl font-bold text-primary mb-3">${part.price}</p>
+                          <p className="text-2xl font-bold text-primary mb-3 glow-cyan">${part.price}</p>
                         )}
-                        <div className="text-sm text-muted-foreground mb-3">
-                          Listed by: {part.public_profiles?.full_name || "Anonymous"} ({part.public_profiles?.trade_type})
+                        <div className="text-sm text-foreground/60 mb-3 font-rajdhani">
+                          LISTED BY: {part.public_profiles?.full_name || "ANONYMOUS"} ({part.public_profiles?.trade_type})
                         </div>
                         {part.supplier_id !== user?.id && (
                           <>
@@ -210,7 +215,7 @@ const Browse = () => {
                               className="w-full mb-2"
                               onClick={() => handleCreateMatch("part", part.id, part.supplier_id)}
                             >
-                              Contact Supplier
+                              CONTACT SUPPLIER
                             </Button>
                             <AiMatchSuggestions 
                               itemId={part.id} 
@@ -228,31 +233,31 @@ const Browse = () => {
 
             <TabsContent value="requests" className="space-y-4">
               {filteredRequests.length === 0 ? (
-                <Card>
+                <Card className="glass-card">
                   <CardContent className="flex flex-col items-center justify-center py-12">
-                    <ShoppingCart className="h-16 w-16 text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">No requests found matching your search</p>
+                    <ShoppingCart className="h-16 w-16 text-secondary mb-4 glow-purple" />
+                    <p className="text-foreground/70 font-rajdhani text-lg">NO REQUESTS FOUND</p>
                   </CardContent>
                 </Card>
               ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredRequests.map((request) => (
-                    <Card key={request.id} className="hover:shadow-medium transition-shadow">
+                    <Card key={request.id} className="hover:scale-[1.02] transition-transform glass-card glow-purple">
                       <CardHeader>
                         <div className="flex items-start justify-between mb-2">
-                          <CardTitle className="text-lg">{request.part_name}</CardTitle>
+                          <CardTitle className="text-lg text-secondary font-orbitron">{request.part_name}</CardTitle>
                           {request.condition_preference && (
-                            <Badge variant="secondary">{request.condition_preference}</Badge>
+                            <Badge variant="secondary" className="bg-secondary/20 text-secondary border border-secondary/40">{request.condition_preference}</Badge>
                           )}
                         </div>
                         <CardDescription className="space-y-1">
-                          <div className="flex items-center text-sm">
-                            <Package className="h-4 w-4 mr-1" />
+                          <div className="flex items-center text-sm text-foreground/70">
+                            <Package className="h-4 w-4 mr-1 text-secondary" />
                             {request.category}
                           </div>
                           {request.location && (
-                            <div className="flex items-center text-sm">
-                              <MapPin className="h-4 w-4 mr-1" />
+                            <div className="flex items-center text-sm text-foreground/70">
+                              <MapPin className="h-4 w-4 mr-1 text-accent" />
                               {request.location}
                             </div>
                           )}
@@ -260,23 +265,24 @@ const Browse = () => {
                       </CardHeader>
                       <CardContent>
                         {request.description && (
-                          <p className="text-sm text-muted-foreground mb-3">{request.description}</p>
+                          <p className="text-sm text-foreground/70 mb-3 font-rajdhani">{request.description}</p>
                         )}
                         {request.max_price && (
-                          <p className="text-lg font-semibold text-accent mb-3">
-                            Budget: Up to ${request.max_price}
+                          <p className="text-lg font-semibold text-accent mb-3 glow-magenta">
+                            BUDGET: UP TO ${request.max_price}
                           </p>
                         )}
-                        <div className="text-sm text-muted-foreground mb-3">
-                          Requested by: {request.public_profiles?.full_name || "Anonymous"} ({request.public_profiles?.trade_type})
+                        <div className="text-sm text-foreground/60 mb-3 font-rajdhani">
+                          REQUESTED BY: {request.public_profiles?.full_name || "ANONYMOUS"} ({request.public_profiles?.trade_type})
                         </div>
                         {request.requester_id !== user?.id && (
                           <>
                             <Button
                               className="w-full mb-2"
+                              variant="secondary"
                               onClick={() => handleCreateMatch("request", request.id, request.requester_id)}
                             >
-                              I Have This Part
+                              I HAVE THIS PART
                             </Button>
                             <AiMatchSuggestions 
                               itemId={request.id} 

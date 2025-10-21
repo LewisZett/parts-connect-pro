@@ -98,10 +98,10 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <div className="h-16 w-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4 glow-cyan"></div>
+          <p className="text-primary font-orbitron text-xl">LOADING...</p>
         </div>
       </div>
     );
@@ -113,25 +113,25 @@ const Profile = () => {
       
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-4xl font-bold mb-2">Profile</h1>
-          <p className="text-muted-foreground mb-6">Manage your account information</p>
+          <h1 className="text-5xl font-bold mb-2 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent text-center">PROFILE</h1>
+          <p className="text-foreground/80 mb-6 text-center font-rajdhani text-lg">MANAGE YOUR ACCOUNT</p>
 
-          <Card>
+          <Card className="glass-card glow-cyan">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                    <User className="h-8 w-8 text-white" />
+                  <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center glow-cyan">
+                    <User className="h-8 w-8 text-primary-foreground" />
                   </div>
                   <div>
-                    <CardTitle>{profile?.full_name || "User"}</CardTitle>
-                    <CardDescription>{profile?.email}</CardDescription>
+                    <CardTitle className="text-primary font-orbitron">{profile?.full_name || "USER"}</CardTitle>
+                    <CardDescription className="text-foreground/70 font-rajdhani">{profile?.email}</CardDescription>
                   </div>
                 </div>
                 {!editing && (
                   <Button variant="outline" onClick={() => setEditing(true)}>
                     <Edit className="mr-2 h-4 w-4" />
-                    Edit
+                    EDIT
                   </Button>
                 )}
               </div>
@@ -140,20 +140,21 @@ const Profile = () => {
               {editing ? (
                 <>
                   <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name</Label>
+                    <Label htmlFor="fullName" className="text-foreground font-orbitron">FULL NAME</Label>
                     <Input
                       id="fullName"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
+                      className="border-primary/30 focus:border-primary"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="tradeType">Trade Type</Label>
+                    <Label htmlFor="tradeType" className="text-foreground font-orbitron">TRADE TYPE</Label>
                     <Select value={tradeType} onValueChange={setTradeType}>
-                      <SelectTrigger>
+                      <SelectTrigger className="border-primary/30 focus:border-primary">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-card border-primary/30">
                         <SelectItem value="phone_repair">Phone Repair</SelectItem>
                         <SelectItem value="computer_tech">Computer Tech</SelectItem>
                         <SelectItem value="car_mechanic">Car Mechanic</SelectItem>
@@ -165,44 +166,45 @@ const Profile = () => {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="phoneNumber">Phone Number (for WhatsApp notifications)</Label>
+                    <Label htmlFor="phoneNumber" className="text-foreground font-orbitron">PHONE NUMBER</Label>
                     <Input
                       id="phoneNumber"
                       type="tel"
                       placeholder="+1234567890"
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
+                      className="border-primary/30 focus:border-primary"
                     />
-                    <p className="text-xs text-muted-foreground">
-                      Enter in international format (e.g., +1234567890). Optional - used for WhatsApp notifications.
+                    <p className="text-xs text-foreground/60 font-rajdhani">
+                      International format (e.g., +1234567890). Optional - for WhatsApp notifications.
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    <Button onClick={handleUpdateProfile}>Save Changes</Button>
-                    <Button variant="outline" onClick={() => setEditing(false)}>Cancel</Button>
+                    <Button onClick={handleUpdateProfile}>SAVE</Button>
+                    <Button variant="outline" onClick={() => setEditing(false)}>CANCEL</Button>
                   </div>
                 </>
               ) : (
                 <div className="space-y-4">
                   <div>
-                    <Label className="text-muted-foreground">Email</Label>
-                    <p className="text-lg">{profile?.email}</p>
+                    <Label className="text-foreground/70 font-orbitron">EMAIL</Label>
+                    <p className="text-lg text-foreground font-rajdhani">{profile?.email}</p>
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">Trade Type</Label>
-                    <p className="text-lg capitalize">{profile?.trade_type?.replace("_", " ")}</p>
+                    <Label className="text-foreground/70 font-orbitron">TRADE TYPE</Label>
+                    <p className="text-lg text-foreground font-rajdhani capitalize">{profile?.trade_type?.replace("_", " ")}</p>
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">Phone Number</Label>
-                    <p className="text-lg">{profile?.phone_number || "Not set"}</p>
+                    <Label className="text-foreground/70 font-orbitron">PHONE NUMBER</Label>
+                    <p className="text-lg text-foreground font-rajdhani">{profile?.phone_number || "Not set"}</p>
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">Verified</Label>
-                    <p className="text-lg">{profile?.is_verified ? "Yes" : "No"}</p>
+                    <Label className="text-foreground/70 font-orbitron">VERIFIED</Label>
+                    <p className="text-lg text-foreground font-rajdhani">{profile?.is_verified ? "Yes" : "No"}</p>
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">Member Since</Label>
-                    <p className="text-lg">
+                    <Label className="text-foreground/70 font-orbitron">MEMBER SINCE</Label>
+                    <p className="text-lg text-foreground font-rajdhani">
                       {new Date(profile?.created_at).toLocaleDateString()}
                     </p>
                   </div>
@@ -211,27 +213,27 @@ const Profile = () => {
             </CardContent>
           </Card>
 
-          <Card className="mt-6">
+          <Card className="mt-6 glass-card glow-purple">
             <CardHeader>
-              <CardTitle>Account Statistics</CardTitle>
+              <CardTitle className="text-secondary font-orbitron text-center text-2xl">ACCOUNT STATS</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Parts Listed</p>
-                  <p className="text-2xl font-bold text-primary">{stats.parts}</p>
+                <div className="text-center p-4 bg-primary/10 rounded-lg border border-primary/30">
+                  <p className="text-sm text-foreground/70 font-orbitron mb-2">PARTS LISTED</p>
+                  <p className="text-3xl font-bold text-primary glow-cyan">{stats.parts}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Requests Made</p>
-                  <p className="text-2xl font-bold text-accent">{stats.requests}</p>
+                <div className="text-center p-4 bg-secondary/10 rounded-lg border border-secondary/30">
+                  <p className="text-sm text-foreground/70 font-orbitron mb-2">REQUESTS MADE</p>
+                  <p className="text-3xl font-bold text-secondary glow-purple">{stats.requests}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Matches</p>
-                  <p className="text-2xl font-bold text-foreground">{stats.matches}</p>
+                <div className="text-center p-4 bg-accent/10 rounded-lg border border-accent/30">
+                  <p className="text-sm text-foreground/70 font-orbitron mb-2">MATCHES</p>
+                  <p className="text-3xl font-bold text-accent glow-magenta">{stats.matches}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Rating</p>
-                  <p className="text-2xl font-bold text-muted-foreground">N/A</p>
+                <div className="text-center p-4 bg-muted/20 rounded-lg border border-muted">
+                  <p className="text-sm text-foreground/70 font-orbitron mb-2">RATING</p>
+                  <p className="text-3xl font-bold text-foreground/50">N/A</p>
                 </div>
               </div>
             </CardContent>

@@ -110,21 +110,22 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
-      <Card className="w-full max-w-md shadow-large">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10"></div>
+      <Card className="w-full max-w-md shadow-large relative z-10 glass-card glow-cyan">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
-            <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <Wrench className="h-8 w-8 text-white" />
+            <div className="h-20 w-20 rounded-full bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center glow-cyan animate-pulse">
+              <Wrench className="h-10 w-10 text-primary-foreground" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">
-            {isLogin ? "Welcome Back" : "Join PartsMatch Pro"}
+          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+            {isLogin ? "WELCOME BACK" : "JOIN THE NETWORK"}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-foreground/70">
             {isLogin
-              ? "Sign in to connect with technicians"
-              : "Create an account to find and list parts"}
+              ? "Access your command center"
+              : "Register for exclusive access"}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -132,22 +133,23 @@ const Auth = () => {
             {!isLogin && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
+                  <Label htmlFor="fullName" className="text-foreground font-orbitron">FULL NAME</Label>
                   <Input
                     id="fullName"
                     placeholder="John Doe"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required={!isLogin}
+                    className="border-primary/30 focus:border-primary"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="tradeType">Your Trade</Label>
+                  <Label htmlFor="tradeType" className="text-foreground font-orbitron">YOUR TRADE</Label>
                   <Select value={tradeType} onValueChange={setTradeType} required={!isLogin}>
-                    <SelectTrigger>
+                    <SelectTrigger className="border-primary/30 focus:border-primary">
                       <SelectValue placeholder="Select your trade" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-card border-primary/30">
                       <SelectItem value="phone_repair">Phone Repair</SelectItem>
                       <SelectItem value="computer_tech">Computer Tech</SelectItem>
                       <SelectItem value="car_mechanic">Car Mechanic</SelectItem>
@@ -161,18 +163,19 @@ const Auth = () => {
               </>
             )}
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-foreground font-orbitron">EMAIL</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="your@email.com"
+                placeholder="user@domain.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="border-primary/30 focus:border-primary"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-foreground font-orbitron">PASSWORD</Label>
               <Input
                 id="password"
                 type="password"
@@ -180,21 +183,22 @@ const Auth = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="border-primary/30 focus:border-primary"
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Loading..." : isLogin ? "Sign In" : "Sign Up"}
+              {loading ? "LOADING..." : isLogin ? "ACCESS" : "REGISTER"}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">
             <button
               type="button"
               onClick={() => setIsLogin(!isLogin)}
-              className="text-primary hover:underline"
+              className="text-primary hover:text-primary/80 transition-colors font-orbitron"
             >
               {isLogin
-                ? "Don't have an account? Sign up"
-                : "Already have an account? Sign in"}
+                ? "NEW USER? REGISTER HERE"
+                : "EXISTING USER? LOGIN HERE"}
             </button>
           </div>
         </CardContent>

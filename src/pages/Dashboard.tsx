@@ -34,10 +34,10 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <div className="h-16 w-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4 glow-cyan"></div>
+          <p className="text-primary font-orbitron text-xl">LOADING...</p>
         </div>
       </div>
     );
@@ -49,129 +49,131 @@ const Dashboard = () => {
       
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold mb-2">Welcome to PartsMatch Pro</h1>
-            <p className="text-xl text-muted-foreground">
-              Connect with technicians, find parts, and grow your business
+          <div className="mb-8 text-center">
+            <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent animate-pulse">
+              PARTSMATCH PRO
+            </h1>
+            <p className="text-xl text-foreground/80 font-rajdhani">
+              CONNECT • TRADE • DOMINATE THE MARKET
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 mb-8">
-            <Card className="hover:shadow-medium transition-shadow cursor-pointer" onClick={() => navigate("/browse")}>
+            <Card className="hover:scale-[1.02] transition-transform cursor-pointer glass-card glow-cyan" onClick={() => navigate("/browse")}>
               <CardHeader>
-                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <Search className="h-6 w-6 text-primary" />
+                <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-4 glow-cyan">
+                  <Search className="h-6 w-6 text-primary-foreground" />
                 </div>
-                <CardTitle>Browse Parts & Requests</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-primary">BROWSE PARTS</CardTitle>
+                <CardDescription className="text-foreground/70">
                   Search for parts you need or find buyers looking for what you have
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button className="w-full" asChild>
-                  <Link to="/browse">Start Browsing</Link>
+                  <Link to="/browse">ENTER</Link>
                 </Button>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-medium transition-shadow cursor-pointer" onClick={() => navigate("/my-listings")}>
+            <Card className="hover:scale-[1.02] transition-transform cursor-pointer glass-card glow-purple" onClick={() => navigate("/my-listings")}>
               <CardHeader>
-                <div className="h-12 w-12 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
-                  <Package className="h-6 w-6 text-accent" />
+                <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-secondary to-accent flex items-center justify-center mb-4 glow-purple">
+                  <Package className="h-6 w-6 text-secondary-foreground" />
                 </div>
-                <CardTitle>My Listings</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-secondary">MY LISTINGS</CardTitle>
+                <CardDescription className="text-foreground/70">
                   Manage your parts inventory and requests
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button className="w-full" variant="secondary" asChild>
-                  <Link to="/my-listings">View Listings</Link>
+                  <Link to="/my-listings">MANAGE</Link>
                 </Button>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-medium transition-shadow cursor-pointer" onClick={() => navigate("/matches")}>
+            <Card className="hover:scale-[1.02] transition-transform cursor-pointer glass-card glow-magenta" onClick={() => navigate("/matches")}>
               <CardHeader>
-                <div className="h-12 w-12 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
-                  <MessageSquare className="h-6 w-6 text-accent" />
+                <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-accent to-secondary flex items-center justify-center mb-4 glow-magenta">
+                  <MessageSquare className="h-6 w-6 text-accent-foreground" />
                 </div>
-                <CardTitle>Matches & Messages</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-accent">MATCHES</CardTitle>
+                <CardDescription className="text-foreground/70">
                   View your connections and chat with other technicians
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button className="w-full" variant="secondary" asChild>
-                  <Link to="/matches">View Matches</Link>
+                  <Link to="/matches">CONNECT</Link>
                 </Button>
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-medium transition-shadow">
+            <Card className="hover:scale-[1.02] transition-transform glass-card">
               <CardHeader>
-                <div className="h-12 w-12 rounded-lg bg-secondary/50 flex items-center justify-center mb-4">
+                <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center mb-4">
                   <TrendingUp className="h-6 w-6 text-foreground" />
                 </div>
-                <CardTitle>Getting Started</CardTitle>
-                <CardDescription>
-                  New to PartsMatch Pro? Learn how to get the most out of the platform
+                <CardTitle className="text-foreground">GETTING STARTED</CardTitle>
+                <CardDescription className="text-foreground/70">
+                  New to PartsMatch Pro? Learn how to dominate
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button className="w-full" variant="outline">
-                  View Guide
+                  LEARN
                 </Button>
               </CardContent>
             </Card>
           </div>
 
-          <Card className="bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
+          <Card className="bg-gradient-to-br from-card/50 to-card/30 border-primary/30 glass-card">
             <CardHeader>
-              <CardTitle>How It Works</CardTitle>
+              <CardTitle className="text-primary text-center text-3xl">MISSION PROTOCOL</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-start space-x-4">
-                <div className="h-8 w-8 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 font-bold">
+            <CardContent className="space-y-6">
+              <div className="flex items-start space-x-4 group">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-accent text-primary-foreground flex items-center justify-center flex-shrink-0 font-bold glow-cyan group-hover:scale-110 transition-transform">
                   1
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">List or Request Parts</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Add parts you want to sell or create requests for parts you need
+                  <h3 className="font-semibold mb-1 text-primary text-lg font-orbitron">DEPLOY ASSETS</h3>
+                  <p className="text-sm text-foreground/80">
+                    List parts for sale or create requests for required components
                   </p>
                 </div>
               </div>
-              <div className="flex items-start space-x-4">
-                <div className="h-8 w-8 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 font-bold">
+              <div className="flex items-start space-x-4 group">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-secondary to-accent text-secondary-foreground flex items-center justify-center flex-shrink-0 font-bold glow-purple group-hover:scale-110 transition-transform">
                   2
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">Get Matched Instantly</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Our system automatically connects buyers with suppliers
+                  <h3 className="font-semibold mb-1 text-secondary text-lg font-orbitron">AUTO-MATCH ENGAGED</h3>
+                  <p className="text-sm text-foreground/80">
+                    AI system instantly connects suppliers with requesters
                   </p>
                 </div>
               </div>
-              <div className="flex items-start space-x-4">
-                <div className="h-8 w-8 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 font-bold">
+              <div className="flex items-start space-x-4 group">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-accent to-primary text-accent-foreground flex items-center justify-center flex-shrink-0 font-bold glow-magenta group-hover:scale-110 transition-transform">
                   3
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">Connect Securely</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Chat safely in-app - contact info is shared only when both parties agree
+                  <h3 className="font-semibold mb-1 text-accent text-lg font-orbitron">SECURE CHANNEL</h3>
+                  <p className="text-sm text-foreground/80">
+                    Encrypted in-app comms - contact data shared on mutual consent
                   </p>
                 </div>
               </div>
-              <div className="flex items-start space-x-4">
-                <div className="h-8 w-8 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 font-bold">
+              <div className="flex items-start space-x-4 group">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary text-primary-foreground flex items-center justify-center flex-shrink-0 font-bold glow-cyan group-hover:scale-110 transition-transform">
                   4
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">Complete the Deal</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Finalize your transaction and rate your experience
+                  <h3 className="font-semibold mb-1 text-primary text-lg font-orbitron">MISSION COMPLETE</h3>
+                  <p className="text-sm text-foreground/80">
+                    Execute transaction and rate performance metrics
                   </p>
                 </div>
               </div>
