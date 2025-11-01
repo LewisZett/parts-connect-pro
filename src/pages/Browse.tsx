@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import Navbar from "@/components/Navbar";
+import { AppLayout } from "@/components/AppLayout";
 import { AiMatchSuggestions } from "@/components/AiMatchSuggestions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -129,9 +129,7 @@ const Browse = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar user={user} />
-      
+    <AppLayout user={user}>
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-5xl font-bold mb-2 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent text-center">BROWSE MARKET</h1>
@@ -300,7 +298,7 @@ const Browse = () => {
           </Tabs>
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 };
 

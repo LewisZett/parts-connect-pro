@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import Navbar from "@/components/Navbar";
+import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -187,9 +187,7 @@ const Matches = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar user={user} />
-      
+    <AppLayout user={user}>
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-4xl font-bold mb-2">Matches & Messages</h1>
@@ -335,7 +333,7 @@ const Matches = () => {
           </div>
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 };
 

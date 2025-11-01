@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import Navbar from "@/components/Navbar";
+import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -108,9 +108,7 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar user={user} />
-      
+    <AppLayout user={user}>
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <h1 className="text-4xl md:text-5xl font-bold mb-2 text-primary text-center">PROFILE</h1>
         <p className="text-muted-foreground mb-6 text-center font-rajdhani text-lg">MANAGE YOUR ACCOUNT</p>
@@ -238,7 +236,7 @@ const Profile = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </AppLayout>
   );
 };
 
