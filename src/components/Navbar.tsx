@@ -1,5 +1,5 @@
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useNavigate } from "react-router-dom";
+import { AnimatedMenuIcon } from "@/components/AnimatedMenuIcon";
 
 interface NavbarProps {
   user: any;
@@ -13,7 +13,7 @@ const Navbar = ({ user }: NavbarProps) => {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-4">
-            {user && <SidebarTrigger />}
+            {user && <AnimatedMenuIcon />}
             <button
               onClick={() => navigate("/")}
               className="flex items-center gap-2 text-xl font-bold text-primary font-orbitron"
