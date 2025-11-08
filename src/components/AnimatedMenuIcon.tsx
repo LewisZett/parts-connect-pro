@@ -12,12 +12,12 @@ export function AnimatedMenuIcon() {
       aria-label="Toggle menu"
     >
       {open ? (
-        <X className="h-6 w-6 text-foreground animate-in fade-in-0 zoom-in-95 duration-200" />
+        <X className="h-8 w-8 text-foreground animate-in fade-in-0 zoom-in-95 duration-200" />
       ) : (
         <img
           src={gearPuzzleIcon}
           alt="Menu"
-          className="h-6 w-6 animate-pulse-gentle"
+          className="h-8 w-8 animate-pulse-gentle object-contain"
         />
       )}
     </button>
