@@ -81,6 +81,24 @@
   }
   body {
     @apply bg-background text-foreground font-rajdhani;
+    background-image: url('/src/assets/gear-puzzle-bg.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 60vmin;
+    background-attachment: fixed;
+    position: relative;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-color: hsl(var(--background) / 0.94);
+    pointer-events: none;
+    z-index: 0;
+  }
+  #root {
+    position: relative;
+    z-index: 1;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-orbitron;

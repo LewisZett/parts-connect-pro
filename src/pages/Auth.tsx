@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Wrench } from "lucide-react";
+import logo from "@/assets/gear-puzzle-icon.png";
 import { z } from "zod";
 
 const authSchema = z.object({
@@ -116,7 +116,7 @@ const Auth = () => {
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
             <div className="h-20 w-20 rounded-full bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center glow-cyan animate-pulse">
-              <Wrench className="h-10 w-10 text-primary-foreground" />
+              <img src={logo} alt="PARTSPRO" className="h-12 w-12 object-contain" />
             </div>
           </div>
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">

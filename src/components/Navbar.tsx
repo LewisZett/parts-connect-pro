@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { AnimatedMenuIcon } from "@/components/AnimatedMenuIcon";
+import logo from "@/assets/gear-puzzle-icon.png";
 
 interface NavbarProps {
   user: any;
@@ -18,6 +19,7 @@ const Navbar = ({ user }: NavbarProps) => {
               onClick={() => navigate("/")}
               className="flex items-center gap-2 text-xl font-bold text-primary font-orbitron"
             >
+              <img src={logo} alt="PARTSPRO logo" className="h-6 w-6 object-contain" />
               PARTSPRO
             </button>
           </div>
