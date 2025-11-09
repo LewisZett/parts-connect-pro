@@ -11,3 +11,6 @@ verify_jwt = true
 
 [functions.parse-parts-text]
 verify_jwt = true
+
+[functions.auto-match-parts]
+verify_jwt = false
