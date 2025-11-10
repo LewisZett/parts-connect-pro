@@ -51,7 +51,7 @@ const Dashboard = () => {
             Welcome to PartMatch
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            The smart marketplace connecting industrial parts suppliers and buyers
+            The smart marketplace connecting spares/parts suppliers and buyers
           </p>
           <div className="flex gap-4 justify-center pt-4">
             <Button size="lg" onClick={() => navigate("/browse")}>
