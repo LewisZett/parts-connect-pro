@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { Menu } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
 import gearPuzzleIcon from "@/assets/gear-puzzle-icon.png";
 
@@ -12,7 +12,7 @@ export function AnimatedMenuIcon() {
       aria-label="Toggle menu"
     >
       {open ? (
-        <X className="h-8 w-8 text-foreground animate-in fade-in-0 zoom-in-95 duration-200" />
+        <Menu className="h-8 w-8 text-foreground animate-in fade-in-0 zoom-in-95 duration-200" />
       ) : (
         <img
           src={gearPuzzleIcon}
