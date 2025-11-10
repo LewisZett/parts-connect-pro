@@ -47,7 +47,7 @@ serve(async (req) => {
       const messages: any[] = [
         { 
           role: 'system', 
-          content: 'You are an expert parts matching assistant. Analyze text descriptions and images to find the best matches. Always respond with valid JSON only.' 
+          content: 'You are an expert parts matching assistant. Analyze text descriptions and images to find the best matches.' 
         }
       ];
 
@@ -83,10 +83,7 @@ Analyze these parts and return the top 5 best matches. Consider:
 5. Location proximity
 6. Description relevance
 7. Visual similarity if images are available
-8. Supplier reputation
-
-Return ONLY a JSON array of matched part IDs with scores and reasons, ordered by match quality (best first).
-Format: [{"id": "uuid", "score": 0-100, "reason": "brief explanation"}]`
+8. Supplier reputation`
       }];
 
       // Add images of available parts for visual matching
@@ -131,7 +128,7 @@ Format: [{"id": "uuid", "score": 0-100, "reason": "brief explanation"}]`
       const messages: any[] = [
         { 
           role: 'system', 
-          content: 'You are an expert parts matching assistant. Analyze text descriptions and images to find the best matches. Always respond with valid JSON only.' 
+          content: 'You are an expert parts matching assistant. Analyze text descriptions and images to find the best matches.' 
         }
       ];
 
@@ -167,10 +164,7 @@ Analyze these requests and return the top 5 best matches. Consider:
 5. Location proximity
 6. Description relevance
 7. Visual appearance if image is available
-8. Buyer seriousness
-
-Return ONLY a JSON array of matched request IDs with scores and reasons, ordered by match quality (best first).
-Format: [{"id": "uuid", "score": 0-100, "reason": "brief explanation"}]`
+8. Buyer seriousness`
       }];
 
       // Add image of the part for visual matching
@@ -199,10 +193,39 @@ Format: [{"id": "uuid", "score": 0-100, "reason": "brief explanation"}]`
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
         messages: Array.isArray(prompt) ? prompt : [
-          { role: 'system', content: 'You are an expert parts matching assistant. Always respond with valid JSON only.' },
+          { role: 'system', content: 'You are an expert parts matching assistant.' },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.3,
+        tools: [
+          {
+            type: 'function',
+            function: {
+              name: 'return_matches',
+              description: 'Return the top matches for parts or requests with scores and reasons',
+              parameters: {
+                type: 'object',
+                properties: {
+                  matches: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'string', description: 'UUID of the matched part or request' },
+                        score: { type: 'number', description: 'Match quality score from 0-100' },
+                        reason: { type: 'string', description: 'Brief explanation of why this is a good match' }
+                      },
+                      required: ['id', 'score', 'reason'],
+                      additionalProperties: false
+                    }
+                  }
+                },
+                required: ['matches'],
+                additionalProperties: false
+              }
+            }
+          }
+        ],
+        tool_choice: { type: 'function', function: { name: 'return_matches' } }
       }),
     });
 
@@ -215,17 +238,13 @@ Format: [{"id": "uuid", "score": 0-100, "reason": "brief explanation"}]`
     const aiData = await aiResponse.json();
     console.log('AI response received');
     
-    const content = aiData.choices[0].message.content;
-    
-    // Extract JSON from the response (handle markdown code blocks)
-    let jsonStr = content.trim();
-    if (jsonStr.startsWith('```json')) {
-      jsonStr = jsonStr.slice(7, -3).trim();
-    } else if (jsonStr.startsWith('```')) {
-      jsonStr = jsonStr.slice(3, -3).trim();
+    const toolCall = aiData.choices[0].message.tool_calls?.[0];
+    if (!toolCall) {
+      throw new Error('No tool call in AI response');
     }
     
-    const matches = JSON.parse(jsonStr);
+    const matchesResult = JSON.parse(toolCall.function.arguments);
+    const matches = matchesResult.matches;
     console.log('Parsed matches:', matches);
 
     return new Response(
