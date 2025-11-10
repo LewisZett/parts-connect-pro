@@ -42,14 +42,50 @@ const Browse = () => {
 
   const fetchData = async () => {
     setLoading(true);
-    const [partsResult, requestsResult] = await Promise.all([
-      supabase.from("parts").select("*, public_profiles(full_name, trade_type)").eq("status", "available"),
-      supabase.from("part_requests").select("*, public_profiles(full_name, trade_type)").eq("status", "active"),
-    ]);
+    try {
+      const [partsRes, requestsRes] = await Promise.all([
+        supabase.from("parts").select("*").eq("status", "available"),
+        supabase.from("part_requests").select("*").eq("status", "active"),
+      ]);
 
-    if (partsResult.data) setParts(partsResult.data);
-    if (requestsResult.data) setRequests(requestsResult.data);
-    setLoading(false);
+      const partsData = partsRes.data ?? [];
+      const requestsData = requestsRes.data ?? [];
+
+      const supplierIds = partsData.map((p: any) => p.supplier_id);
+      const requesterIds = requestsData.map((r: any) => r.requester_id);
+      const uniqueIds = Array.from(new Set([...supplierIds, ...requesterIds].filter(Boolean)));
+
+      let profilesById: Record<string, any> = {};
+      if (uniqueIds.length > 0) {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from("public_profiles")
+          .select("id, full_name, trade_type")
+          .in("id", uniqueIds);
+
+        if (profilesError) {
+          console.error("Error loading profiles:", profilesError);
+        } else if (profilesData) {
+          profilesById = Object.fromEntries(profilesData.map((p: any) => [p.id, p]));
+        }
+      }
+
+      const partsWithProfiles = partsData.map((p: any) => ({
+        ...p,
+        public_profiles: profilesById[p.supplier_id] ?? null,
+      }));
+
+      const requestsWithProfiles = requestsData.map((r: any) => ({
+        ...r,
+        public_profiles: profilesById[r.requester_id] ?? null,
+      }));
+
+      setParts(partsWithProfiles);
+      setRequests(requestsWithProfiles);
+    } catch (e) {
+      console.error("Error fetching data:", e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCreateMatch = async (type: "part" | "request", itemId: string, ownerId: string) => {
