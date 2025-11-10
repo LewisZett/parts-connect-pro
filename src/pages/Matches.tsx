@@ -75,20 +75,54 @@ const Matches = () => {
 
   const fetchMatches = async (userId: string) => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("matches")
-      .select(`
-        *,
-        supplier:public_profiles!matches_supplier_id_fkey(full_name, trade_type),
-        requester:public_profiles!matches_requester_id_fkey(full_name, trade_type),
-        parts(part_name, price),
-        part_requests(part_name, max_price)
-      `)
-      .or(`supplier_id.eq.${userId},requester_id.eq.${userId}`)
-      .order("created_at", { ascending: false });
+    try {
+      const { data: matchesData, error: matchesError } = await supabase
+        .from("matches")
+        .select(`
+          *,
+          parts(part_name, price),
+          part_requests(part_name, max_price)
+        `)
+        .or(`supplier_id.eq.${userId},requester_id.eq.${userId}`)
+        .order("created_at", { ascending: false });
 
-    if (data) setMatches(data);
-    setLoading(false);
+      if (matchesError) {
+        console.error("Error fetching matches:", matchesError);
+        setLoading(false);
+        return;
+      }
+
+      const matches = matchesData ?? [];
+      const supplierIds = matches.map((m: any) => m.supplier_id).filter(Boolean);
+      const requesterIds = matches.map((m: any) => m.requester_id).filter(Boolean);
+      const uniqueIds = Array.from(new Set([...supplierIds, ...requesterIds]));
+
+      let profilesById: Record<string, any> = {};
+      if (uniqueIds.length > 0) {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from("public_profiles")
+          .select("id, full_name, trade_type")
+          .in("id", uniqueIds);
+
+        if (profilesError) {
+          console.error("Error loading profiles:", profilesError);
+        } else if (profilesData) {
+          profilesById = Object.fromEntries(profilesData.map((p: any) => [p.id, p]));
+        }
+      }
+
+      const matchesWithProfiles = matches.map((m: any) => ({
+        ...m,
+        supplier: profilesById[m.supplier_id] ?? null,
+        requester: profilesById[m.requester_id] ?? null,
+      }));
+
+      setMatches(matchesWithProfiles);
+    } catch (e) {
+      console.error("Error in fetchMatches:", e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchMessages = async (matchId: string) => {
