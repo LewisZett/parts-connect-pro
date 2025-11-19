@@ -14,11 +14,42 @@ serve(async (req) => {
   try {
     console.log("Starting automatic matching process...");
 
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error("Missing authorization header");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized - Missing authorization header" }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401,
+        }
+      );
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!;
 
+    // Create client with service role for operations
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Verify the user's JWT token
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      console.error("Invalid authentication:", authError);
+      return new Response(
+        JSON.stringify({ error: "Unauthorized - Invalid or expired token" }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401,
+        }
+      );
+    }
+
+    console.log(`Auto-match triggered by user: ${user.id}`);
 
     // Fetch all active part requests
     const { data: requests, error: requestsError } = await supabase
