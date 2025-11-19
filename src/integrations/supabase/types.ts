@@ -223,6 +223,33 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          call_count: number
+          created_at: string
+          function_name: string
+          id: string
+          last_call_at: string
+          user_id: string
+        }
+        Insert: {
+          call_count?: number
+          created_at?: string
+          function_name: string
+          id?: string
+          last_call_at?: string
+          user_id: string
+        }
+        Update: {
+          call_count?: number
+          created_at?: string
+          function_name?: string
+          id?: string
+          last_call_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ratings: {
         Row: {
           comment: string | null
@@ -289,7 +316,7 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      cleanup_old_rate_limits: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

@@ -51,6 +51,63 @@ serve(async (req) => {
 
     console.log(`Auto-match triggered by user: ${user.id}`);
 
+    // Rate limiting: Allow max 5 calls per hour per user
+    const rateLimitWindow = 60 * 60 * 1000; // 1 hour in milliseconds
+    const maxCallsPerWindow = 5;
+    const functionName = 'auto-match-parts';
+
+    // Check current rate limit status
+    const { data: rateLimitData, error: rateLimitError } = await supabase
+      .from('rate_limits')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('function_name', functionName)
+      .gte('last_call_at', new Date(Date.now() - rateLimitWindow).toISOString())
+      .single();
+
+    if (rateLimitError && rateLimitError.code !== 'PGRST116') {
+      console.error("Rate limit check error:", rateLimitError);
+    }
+
+    if (rateLimitData) {
+      // User has made calls within the time window
+      if (rateLimitData.call_count >= maxCallsPerWindow) {
+        const timeRemaining = Math.ceil((new Date(rateLimitData.last_call_at).getTime() + rateLimitWindow - Date.now()) / 60000);
+        console.log(`Rate limit exceeded for user ${user.id}. Calls: ${rateLimitData.call_count}`);
+        return new Response(
+          JSON.stringify({ 
+            error: "Rate limit exceeded", 
+            message: `You can only trigger auto-matching ${maxCallsPerWindow} times per hour. Please try again in ${timeRemaining} minutes.`,
+            retryAfter: timeRemaining
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 429,
+          }
+        );
+      }
+
+      // Increment call count
+      await supabase
+        .from('rate_limits')
+        .update({ 
+          call_count: rateLimitData.call_count + 1,
+          last_call_at: new Date().toISOString()
+        })
+        .eq('id', rateLimitData.id);
+    } else {
+      // First call in this window, create new rate limit entry
+      await supabase
+        .from('rate_limits')
+        .insert({
+          user_id: user.id,
+          function_name: functionName,
+          call_count: 1
+        });
+    }
+
+    console.log(`Rate limit check passed for user ${user.id}`);
+
     // Fetch all active part requests
     const { data: requests, error: requestsError } = await supabase
       .from('part_requests')
