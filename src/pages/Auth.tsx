@@ -43,6 +43,30 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  const logSecurityEvent = async (
+    eventType: string,
+    severity: 'low' | 'medium' | 'high' | 'critical',
+    userId?: string,
+    details?: Record<string, any>
+  ) => {
+    try {
+      await supabase.functions.invoke('log-security-event', {
+        body: {
+          event: {
+            user_id: userId,
+            event_type: eventType,
+            event_category: 'authentication',
+            severity,
+            details,
+          },
+        },
+      });
+    } catch (error) {
+      // Silently fail logging - don't disrupt user experience
+      console.error('Failed to log security event:', error);
+    }
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -60,8 +84,24 @@ const Auth = () => {
           return;
         }
 
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        
+        if (error) {
+          // Log failed login attempt
+          await logSecurityEvent('login_failed', 'medium', undefined, {
+            email,
+            error_code: error.status,
+            error_message: error.message,
+          });
+          throw error;
+        }
+
+        // Log successful login
+        if (data.user) {
+          await logSecurityEvent('login_success', 'low', data.user.id, {
+            email: data.user.email,
+          });
+        }
         
         toast({
           title: "Welcome back!",
@@ -79,7 +119,7 @@ const Auth = () => {
           return;
         }
 
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -91,7 +131,23 @@ const Auth = () => {
           },
         });
         
-        if (error) throw error;
+        if (error) {
+          // Log failed signup attempt
+          await logSecurityEvent('signup_failed', 'medium', undefined, {
+            email,
+            error_code: error.status,
+            error_message: error.message,
+          });
+          throw error;
+        }
+
+        // Log successful signup
+        if (data.user) {
+          await logSecurityEvent('signup_success', 'low', data.user.id, {
+            email: data.user.email,
+            trade_type: tradeType,
+          });
+        }
         
         toast({
           title: "Account created!",
