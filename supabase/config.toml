@@ -12,5 +12,8 @@ verify_jwt = true
 [functions.parse-parts-text]
 verify_jwt = true
 
+[functions.log-security-event]
+verify_jwt = false
+
 [functions.auto-match-parts]
 verify_jwt = true

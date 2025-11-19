@@ -74,6 +74,21 @@ serve(async (req) => {
       if (rateLimitData.call_count >= maxCallsPerWindow) {
         const timeRemaining = Math.ceil((new Date(rateLimitData.last_call_at).getTime() + rateLimitWindow - Date.now()) / 60000);
         console.log(`Rate limit exceeded for user ${user.id}. Calls: ${rateLimitData.call_count}`);
+        
+        // Log rate limit violation
+        await supabase.from('security_events').insert({
+          user_id: user.id,
+          event_type: 'rate_limit_exceeded',
+          event_category: 'security',
+          severity: 'medium',
+          details: {
+            function: functionName,
+            attempts: rateLimitData.call_count,
+            max_allowed: maxCallsPerWindow,
+            time_remaining_minutes: timeRemaining,
+          },
+        });
+        
         return new Response(
           JSON.stringify({ 
             error: "Rate limit exceeded", 
