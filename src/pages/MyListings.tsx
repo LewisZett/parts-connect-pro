@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit } from "lucide-react";
+import { Plus, Trash2, Edit, Upload, X } from "lucide-react";
 import { z } from "zod";
 
 const partSchema = z.object({
@@ -54,6 +54,10 @@ const MyListings = () => {
     location: "",
     condition_preference: "",
   });
+  
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -87,8 +91,44 @@ const MyListings = () => {
     setLoading(false);
   };
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast({
+          variant: "destructive",
+          title: "Invalid file type",
+          description: "Please select an image file (JPEG, PNG, or WebP)",
+        });
+        return;
+      }
+      
+      if (file.size > 5242880) { // 5MB limit
+        toast({
+          variant: "destructive",
+          title: "File too large",
+          description: "Image must be less than 5MB",
+        });
+        return;
+      }
+      
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setUploading(true);
 
     try {
       if (dialogType === "part") {
@@ -103,7 +143,32 @@ const MyListings = () => {
             title: "Validation Error",
             description: validation.error.errors[0].message,
           });
+          setUploading(false);
           return;
+        }
+
+        let imageUrl: string | null = null;
+
+        // Upload image if selected
+        if (selectedImage) {
+          const fileExt = selectedImage.name.split('.').pop();
+          const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+          const filePath = `${fileName}`;
+
+          const { error: uploadError, data } = await supabase.storage
+            .from('part-images')
+            .upload(filePath, selectedImage, {
+              cacheControl: '3600',
+              upsert: false
+            });
+
+          if (uploadError) throw uploadError;
+
+          const { data: { publicUrl } } = supabase.storage
+            .from('part-images')
+            .getPublicUrl(filePath);
+
+          imageUrl = publicUrl;
         }
 
         const { error } = await supabase.from("parts").insert({
@@ -114,6 +179,7 @@ const MyListings = () => {
           price: formData.price ? parseFloat(formData.price) : null,
           description: formData.description || null,
           location: formData.location || null,
+          image_url: imageUrl,
         });
 
         if (error) throw error;
@@ -158,6 +224,8 @@ const MyListings = () => {
         location: "",
         condition_preference: "",
       });
+      setSelectedImage(null);
+      setImagePreview(null);
       fetchMyData(user.id);
     } catch (error: any) {
       toast({
@@ -165,6 +233,8 @@ const MyListings = () => {
         title: "Error",
         description: error.message,
       });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -293,7 +363,51 @@ const MyListings = () => {
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       />
                     </div>
-                    <Button type="submit" className="w-full">List Part</Button>
+                    <div>
+                      <Label htmlFor="image">Part Photo</Label>
+                      <div className="mt-2">
+                        {imagePreview ? (
+                          <div className="relative">
+                            <img 
+                              src={imagePreview} 
+                              alt="Preview" 
+                              className="w-full h-48 object-cover rounded-lg"
+                            />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              className="absolute top-2 right-2"
+                              onClick={handleRemoveImage}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer">
+                            <input
+                              id="image"
+                              type="file"
+                              accept="image/jpeg,image/jpg,image/png,image/webp"
+                              onChange={handleImageSelect}
+                              className="hidden"
+                            />
+                            <label htmlFor="image" className="cursor-pointer flex flex-col items-center">
+                              <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                              <span className="text-sm text-muted-foreground">
+                                Click to upload part image
+                              </span>
+                              <span className="text-xs text-muted-foreground mt-1">
+                                JPEG, PNG, WebP (max 5MB)
+                              </span>
+                            </label>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <Button type="submit" className="w-full" disabled={uploading}>
+                      {uploading ? "Uploading..." : "List Part"}
+                    </Button>
                   </form>
                 </DialogContent>
               </Dialog>
