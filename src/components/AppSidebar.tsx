@@ -102,9 +102,6 @@ export function AppSidebar() {
           </SidebarGroup>
         )}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground text-base font-orbitron">
-            Navigation
-          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navigationItems.map((item) => (
