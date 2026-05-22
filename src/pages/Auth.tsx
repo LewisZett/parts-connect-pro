@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/gear-puzzle-icon.png";
+import { PiSignInButton } from "@/components/PiSignInButton";
 import { z } from "zod";
 
 const authSchema = z.object({
