@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/gear-puzzle-icon.png";
+import { PiSignInButton } from "@/components/PiSignInButton";
 import { z } from "zod";
 
 const authSchema = z.object({
@@ -246,6 +247,14 @@ const Auth = () => {
               {loading ? "LOADING..." : isLogin ? "ACCESS" : "REGISTER"}
             </Button>
           </form>
+          <div className="mt-4 flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground font-orbitron">OR</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+          <div className="mt-4">
+            <PiSignInButton className="w-full" />
+          </div>
           <div className="mt-4 text-center text-sm">
             <button
               type="button"
