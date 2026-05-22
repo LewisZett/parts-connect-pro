@@ -247,6 +247,14 @@ const Auth = () => {
               {loading ? "LOADING..." : isLogin ? "ACCESS" : "REGISTER"}
             </Button>
           </form>
+          <div className="mt-4 flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground font-orbitron">OR</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+          <div className="mt-4">
+            <PiSignInButton className="w-full" />
+          </div>
           <div className="mt-4 text-center text-sm">
             <button
               type="button"
