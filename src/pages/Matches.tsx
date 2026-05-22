@@ -149,7 +149,7 @@ const Matches = () => {
 
       const { error } = await supabase
         .from("matches")
-        .update({ [updateField]: true, status: newStatus })
+        .update({ [updateField]: true, status: newStatus } as any)
         .eq("id", matchId);
 
       if (error) throw error;

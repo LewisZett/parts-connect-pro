@@ -96,7 +96,7 @@ const Browse = () => {
         ? { part_id: itemId, supplier_id: ownerId, requester_id: user.id }
         : { request_id: itemId, requester_id: ownerId, supplier_id: user.id };
 
-      const { data: matchResult, error } = await supabase.from("matches").insert(matchData).select().single();
+      const { data: matchResult, error } = await supabase.from("matches").insert(matchData as any).select().single();
 
       if (error) throw error;
 
