@@ -433,6 +433,16 @@ const MyListings = () => {
                       {part.price && <p className="text-xl font-bold text-primary mb-2">${part.price}</p>}
                       {part.location && <p className="text-xs text-muted-foreground mb-2">📍 {part.location}</p>}
                       <p className="text-xs text-muted-foreground mb-3">Status: {part.status}</p>
+                      {part.boosted_until && new Date(part.boosted_until) > new Date() && (
+                        <p className="text-xs text-primary mb-2">
+                          🚀 Boosted until {new Date(part.boosted_until).toLocaleDateString()}
+                        </p>
+                      )}
+                      <BoostListingButton
+                        partId={part.id}
+                        partName={part.part_name}
+                        className="w-full mb-2"
+                      />
                       <Button
                         variant="destructive"
                         size="sm"
@@ -442,6 +452,7 @@ const MyListings = () => {
                         <Trash2 className="mr-2 h-4 w-4" />
                         Delete
                       </Button>
+
                     </CardContent>
                   </Card>
                 ))}
