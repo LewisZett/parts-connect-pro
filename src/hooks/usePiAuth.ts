@@ -56,10 +56,22 @@ async function ensurePiInit(): Promise<void> {
   return initPromise;
 }
 
-function onIncompletePaymentFound(payment: unknown) {
-  // Required callback. Handled elsewhere if payments are added.
-  console.warn("[Pi] Incomplete payment found:", payment);
+function onIncompletePaymentFound(payment: any) {
+  // Complete any in-flight Pi payment found at auth time.
+  console.warn("[Pi] Incomplete payment found, completing via backend:", payment);
+  try {
+    const paymentId = payment?.identifier;
+    const txid = payment?.transaction?.txid;
+    if (paymentId && txid) {
+      supabase.functions.invoke("pi-payments", {
+        body: { action: "complete", paymentId, txid },
+      });
+    }
+  } catch (e) {
+    console.error("[Pi] Failed to complete incomplete payment:", e);
+  }
 }
+
 
 export function usePiAuth() {
   const [session, setSession] = useState<PiSession | null>(() => {
@@ -79,7 +91,7 @@ export function usePiAuth() {
     try {
       await ensurePiInit();
 
-      const authResult = await window.Pi!.authenticate(["username"], onIncompletePaymentFound);
+      const authResult = await window.Pi!.authenticate(["username", "payments"], onIncompletePaymentFound);
       const accessToken: string = authResult?.accessToken;
       if (!accessToken) throw new Error("No accessToken returned by Pi.authenticate");
 

@@ -21,3 +21,7 @@ verify_jwt = true
 [functions.pi-auth-verify]
 verify_jwt = false
 
+[functions.pi-payments]
+verify_jwt = false
+
+
