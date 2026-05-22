@@ -15,6 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, Edit, Upload, X } from "lucide-react";
 import { z } from "zod";
+import { BoostListingButton } from "@/components/BoostListingButton";
+
 
 const partSchema = z.object({
   part_name: z.string().min(2, "Part name must be at least 2 characters").max(100),
