@@ -17,3 +17,7 @@ verify_jwt = false
 
 [functions.auto-match-parts]
 verify_jwt = true
+
+[functions.pi-auth-verify]
+verify_jwt = false
+
