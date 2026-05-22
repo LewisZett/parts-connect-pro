@@ -10,6 +10,19 @@ import MyListings from "./pages/MyListings";
 import Matches from "./pages/Matches";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import { usePiAuth } from "@/hooks/usePiAuth";
+import { useEffect, useRef } from "react";
+
+const PiAutoAuth = () => {
+  const { session, signIn } = usePiAuth();
+  const tried = useRef(false);
+  useEffect(() => {
+    if (tried.current || session) return;
+    tried.current = true;
+    signIn();
+  }, [session, signIn]);
+  return null;
+};
 
 const queryClient = new QueryClient();
 
@@ -19,6 +32,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <PiAutoAuth />
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/auth" element={<Auth />} />

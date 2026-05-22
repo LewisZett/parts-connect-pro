@@ -4,6 +4,7 @@ import { AnimatedMenuIcon } from "@/components/AnimatedMenuIcon";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/gear-puzzle-icon.png";
 import { Package, FileText, Users } from "lucide-react";
+import { PiSignInButton } from "@/components/PiSignInButton";
 
 interface NavbarProps {
   user: any;
@@ -67,14 +68,18 @@ const Navbar = ({ user }: NavbarProps) => {
                   <span className="text-xs">Matches</span>
                 </div>
               </div>
+              <PiSignInButton />
             </div>
           ) : (
-            <button
-              onClick={() => navigate("/auth")}
-              className="px-6 py-2 bg-primary text-primary-foreground rounded-md font-semibold hover:bg-primary/90 transition-colors"
-            >
-              SIGN IN
-            </button>
+            <div className="flex items-center gap-3">
+              <PiSignInButton />
+              <button
+                onClick={() => navigate("/auth")}
+                className="px-6 py-2 bg-primary text-primary-foreground rounded-md font-semibold hover:bg-primary/90 transition-colors"
+              >
+                SIGN IN
+              </button>
+            </div>
           )}
         </div>
       </div>
