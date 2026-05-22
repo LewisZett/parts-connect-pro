@@ -147,6 +147,7 @@ export type Database = {
       }
       parts: {
         Row: {
+          boosted_until: string | null
           category: string
           condition: string
           created_at: string | null
@@ -161,6 +162,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          boosted_until?: string | null
           category: string
           condition: string
           created_at?: string | null
@@ -175,6 +177,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          boosted_until?: string | null
           category?: string
           condition?: string
           created_at?: string | null
@@ -187,6 +190,60 @@ export type Database = {
           status?: string | null
           supplier_id?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      pi_payments: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          memo: string | null
+          metadata: Json | null
+          part_id: string | null
+          payment_id: string
+          pi_uid: string
+          pi_username: string | null
+          product_type: string
+          status: string
+          txid: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          approved_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          memo?: string | null
+          metadata?: Json | null
+          part_id?: string | null
+          payment_id: string
+          pi_uid: string
+          pi_username?: string | null
+          product_type: string
+          status?: string
+          txid?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          memo?: string | null
+          metadata?: Json | null
+          part_id?: string | null
+          payment_id?: string
+          pi_uid?: string
+          pi_username?: string | null
+          product_type?: string
+          status?: string
+          txid?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
