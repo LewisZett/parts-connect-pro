@@ -13,9 +13,37 @@ export interface PiPaymentArgs {
   metadata: Record<string, unknown>;
 }
 
+async function loadPiSdk(): Promise<void> {
+  if (typeof window === "undefined") throw new Error("No window");
+  if (window.Pi) return;
+  await new Promise<void>((resolve, reject) => {
+    const existing = document.querySelector<HTMLScriptElement>(
+      'script[src="https://sdk.minepi.com/pi-sdk.js"]',
+    );
+    const onLoad = () => (window.Pi ? resolve() : reject(new Error("Pi SDK failed to load")));
+    if (existing) {
+      existing.addEventListener("load", onLoad, { once: true });
+      existing.addEventListener("error", () => reject(new Error("Pi SDK script error")), { once: true });
+      return;
+    }
+    const s = document.createElement("script");
+    s.src = "https://sdk.minepi.com/pi-sdk.js";
+    s.async = true;
+    s.onload = onLoad;
+    s.onerror = () => reject(new Error("Pi SDK script error"));
+    document.head.appendChild(s);
+  });
+}
+
 async function ensurePiInit() {
+  await loadPiSdk();
   if (!window.Pi) throw new Error("Pi SDK not available. Open in Pi Browser.");
   await Promise.resolve(window.Pi.init({ version: "2.0", sandbox: true }));
+}
+
+async function ensurePaymentsScope() {
+  // Pi requires authenticating with the 'payments' scope before createPayment.
+  await window.Pi!.authenticate(["username", "payments"], onIncompletePaymentFound);
 }
 
 function onIncompletePaymentFound(payment: any) {
@@ -38,6 +66,7 @@ export function usePiPayments() {
     setError(null);
     try {
       await ensurePiInit();
+      await ensurePaymentsScope();
 
       return await new Promise<{ paymentId: string; txid: string }>((resolve, reject) => {
         window.Pi!.createPayment(
