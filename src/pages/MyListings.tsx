@@ -43,6 +43,8 @@ const MyListings = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"part" | "request">("part");
+  const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
+  const [editingId, setEditingId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -128,6 +130,65 @@ const MyListings = () => {
     setImagePreview(null);
   };
 
+  const resetForm = () => {
+    setFormData({
+      part_name: "",
+      category: "",
+      condition: "new",
+      price: "",
+      max_price: "",
+      description: "",
+      location: "",
+      condition_preference: "",
+    });
+    setSelectedImage(null);
+    setImagePreview(null);
+    setDialogMode("create");
+    setEditingId(null);
+  };
+
+  const openEditPart = (part: any) => {
+    setDialogType("part");
+    setDialogMode("edit");
+    setEditingId(part.id);
+    setFormData({
+      part_name: part.part_name || "",
+      category: part.category || "",
+      condition: part.condition || "new",
+      price: part.price?.toString() || "",
+      max_price: "",
+      description: part.description || "",
+      location: part.location || "",
+      condition_preference: "",
+    });
+    if (part.image_url) {
+      setImagePreview(part.image_url);
+    } else {
+      setImagePreview(null);
+    }
+    setSelectedImage(null);
+    setDialogOpen(true);
+  };
+
+  const openEditRequest = (request: any) => {
+    setDialogType("request");
+    setDialogMode("edit");
+    setEditingId(request.id);
+    setFormData({
+      part_name: request.part_name || "",
+      category: request.category || "",
+      condition: "new",
+      price: "",
+      max_price: request.max_price?.toString() || "",
+      description: request.description || "",
+      location: request.location || "",
+      condition_preference: request.condition_preference || "",
+    });
+    setSelectedImage(null);
+    setImagePreview(null);
+    setDialogOpen(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setUploading(true);
@@ -150,8 +211,9 @@ const MyListings = () => {
         }
 
         let imageUrl: string | null = null;
+        const existingImageUrl = imagePreview && !selectedImage ? imagePreview : null;
 
-        // Upload image if selected
+        // Upload image if a new one is selected
         if (selectedImage) {
           const fileExt = selectedImage.name.split('.').pop();
           const fileName = `${user.id}-${Date.now()}.${fileExt}`;
@@ -173,19 +235,28 @@ const MyListings = () => {
           imageUrl = publicUrl;
         }
 
-        const { error } = await supabase.from("parts").insert({
-          supplier_id: user.id,
+        const payload = {
           part_name: formData.part_name,
           category: formData.category,
           condition: formData.condition,
           price: formData.price ? parseFloat(formData.price) : null,
           description: formData.description || null,
           location: formData.location || null,
-          image_url: imageUrl,
-        });
+          image_url: imageUrl ?? existingImageUrl,
+        };
 
-        if (error) throw error;
-        toast({ title: "Part listed successfully!" });
+        if (dialogMode === "edit" && editingId) {
+          const { error } = await supabase.from("parts").update(payload).eq("id", editingId);
+          if (error) throw error;
+          toast({ title: "Part updated successfully!" });
+        } else {
+          const { error } = await supabase.from("parts").insert({
+            supplier_id: user.id,
+            ...payload,
+          });
+          if (error) throw error;
+          toast({ title: "Part listed successfully!" });
+        }
       } else {
         const validation = requestSchema.safeParse({
           ...formData,
@@ -201,33 +272,31 @@ const MyListings = () => {
           return;
         }
 
-        const { error } = await supabase.from("part_requests").insert({
-          requester_id: user.id,
+        const payload = {
           part_name: formData.part_name,
           category: formData.category,
           condition_preference: formData.condition_preference || null,
           max_price: formData.max_price ? parseFloat(formData.max_price) : null,
           description: formData.description || null,
           location: formData.location || null,
-        });
+        };
 
-        if (error) throw error;
-        toast({ title: "Request created successfully!" });
+        if (dialogMode === "edit" && editingId) {
+          const { error } = await supabase.from("part_requests").update(payload).eq("id", editingId);
+          if (error) throw error;
+          toast({ title: "Request updated successfully!" });
+        } else {
+          const { error } = await supabase.from("part_requests").insert({
+            requester_id: user.id,
+            ...payload,
+          });
+          if (error) throw error;
+          toast({ title: "Request created successfully!" });
+        }
       }
 
       setDialogOpen(false);
-      setFormData({
-        part_name: "",
-        category: "",
-        condition: "new",
-        price: "",
-        max_price: "",
-        description: "",
-        location: "",
-        condition_preference: "",
-      });
-      setSelectedImage(null);
-      setImagePreview(null);
+      resetForm();
       fetchMyData(user.id);
     } catch (error: any) {
       toast({
@@ -295,17 +364,17 @@ const MyListings = () => {
             </TabsList>
 
             <TabsContent value="parts" className="space-y-4">
-              <Dialog open={dialogOpen && dialogType === "part"} onOpenChange={setDialogOpen}>
+              <Dialog open={dialogOpen && dialogType === "part"} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
                 <DialogTrigger asChild>
-                  <Button onClick={() => { setDialogType("part"); setDialogOpen(true); }} className="mb-4">
+                  <Button onClick={() => { setDialogType("part"); setDialogMode("create"); resetForm(); }} className="mb-4">
                     <Plus className="mr-2 h-4 w-4" />
                     List a Part
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>List a Part</DialogTitle>
-                    <DialogDescription>Add a part you want to sell</DialogDescription>
+                    <DialogTitle>{dialogMode === "edit" ? "Edit Part" : "List a Part"}</DialogTitle>
+                    <DialogDescription>{dialogMode === "edit" ? "Update your part listing" : "Add a part you want to sell"}</DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
@@ -408,7 +477,7 @@ const MyListings = () => {
                       </div>
                     </div>
                     <Button type="submit" className="w-full" disabled={uploading}>
-                      {uploading ? "Uploading..." : "List Part"}
+                      {uploading ? "Saving..." : dialogMode === "edit" ? "Update Part" : "List Part"}
                     </Button>
                   </form>
                 </DialogContent>
@@ -446,6 +515,15 @@ const MyListings = () => {
                         className="w-full mb-2"
                       />
                       <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full mb-2"
+                        onClick={() => openEditPart(part)}
+                      >
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                      </Button>
+                      <Button
                         variant="destructive"
                         size="sm"
                         className="w-full"
@@ -454,7 +532,6 @@ const MyListings = () => {
                         <Trash2 className="mr-2 h-4 w-4" />
                         Delete
                       </Button>
-
                     </CardContent>
                   </Card>
                 ))}
@@ -470,17 +547,17 @@ const MyListings = () => {
             </TabsContent>
 
             <TabsContent value="requests" className="space-y-4">
-              <Dialog open={dialogOpen && dialogType === "request"} onOpenChange={setDialogOpen}>
+              <Dialog open={dialogOpen && dialogType === "request"} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
                 <DialogTrigger asChild>
-                  <Button onClick={() => { setDialogType("request"); setDialogOpen(true); }} className="mb-4">
+                  <Button onClick={() => { setDialogType("request"); setDialogMode("create"); resetForm(); }} className="mb-4">
                     <Plus className="mr-2 h-4 w-4" />
                     Create a Request
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Create a Part Request</DialogTitle>
-                    <DialogDescription>Tell us what part you're looking for</DialogDescription>
+                    <DialogTitle>{dialogMode === "edit" ? "Edit Request" : "Create a Part Request"}</DialogTitle>
+                    <DialogDescription>{dialogMode === "edit" ? "Update your part request" : "Tell us what part you're looking for"}</DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
@@ -536,7 +613,9 @@ const MyListings = () => {
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       />
                     </div>
-                    <Button type="submit" className="w-full">Create Request</Button>
+                    <Button type="submit" className="w-full" disabled={uploading}>
+                      {uploading ? "Saving..." : dialogMode === "edit" ? "Update Request" : "Create Request"}
+                    </Button>
                   </form>
                 </DialogContent>
               </Dialog>
@@ -554,6 +633,15 @@ const MyListings = () => {
                         Budget: Up to ${request.max_price}
                       </p>}
                       <p className="text-xs text-muted-foreground mb-3">Status: {request.status}</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full mb-2"
+                        onClick={() => openEditRequest(request)}
+                      >
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                      </Button>
                       <Button
                         variant="destructive"
                         size="sm"
