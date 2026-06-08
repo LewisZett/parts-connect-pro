@@ -66,6 +66,7 @@ export function usePiPayments() {
     setError(null);
     try {
       await ensurePiInit();
+      await ensurePaymentsScope();
 
       return await new Promise<{ paymentId: string; txid: string }>((resolve, reject) => {
         window.Pi!.createPayment(
