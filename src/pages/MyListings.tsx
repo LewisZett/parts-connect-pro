@@ -41,9 +41,10 @@ const MyListings = () => {
   const [myParts, setMyParts] = useState<any[]>([]);
   const [myRequests, setMyRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingPart, setEditingPart] = useState<any>(null);
-  const [editingRequest, setEditingRequest] = useState<any>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogType, setDialogType] = useState<"part" | "request">("part");
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
+  const [editingId, setEditingId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
