@@ -130,6 +130,65 @@ const MyListings = () => {
     setImagePreview(null);
   };
 
+  const resetForm = () => {
+    setFormData({
+      part_name: "",
+      category: "",
+      condition: "new",
+      price: "",
+      max_price: "",
+      description: "",
+      location: "",
+      condition_preference: "",
+    });
+    setSelectedImage(null);
+    setImagePreview(null);
+    setDialogMode("create");
+    setEditingId(null);
+  };
+
+  const openEditPart = (part: any) => {
+    setDialogType("part");
+    setDialogMode("edit");
+    setEditingId(part.id);
+    setFormData({
+      part_name: part.part_name || "",
+      category: part.category || "",
+      condition: part.condition || "new",
+      price: part.price?.toString() || "",
+      max_price: "",
+      description: part.description || "",
+      location: part.location || "",
+      condition_preference: "",
+    });
+    if (part.image_url) {
+      setImagePreview(part.image_url);
+    } else {
+      setImagePreview(null);
+    }
+    setSelectedImage(null);
+    setDialogOpen(true);
+  };
+
+  const openEditRequest = (request: any) => {
+    setDialogType("request");
+    setDialogMode("edit");
+    setEditingId(request.id);
+    setFormData({
+      part_name: request.part_name || "",
+      category: request.category || "",
+      condition: "new",
+      price: "",
+      max_price: request.max_price?.toString() || "",
+      description: request.description || "",
+      location: request.location || "",
+      condition_preference: request.condition_preference || "",
+    });
+    setSelectedImage(null);
+    setImagePreview(null);
+    setDialogOpen(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setUploading(true);
@@ -152,8 +211,9 @@ const MyListings = () => {
         }
 
         let imageUrl: string | null = null;
+        const existingImageUrl = imagePreview && !selectedImage ? imagePreview : null;
 
-        // Upload image if selected
+        // Upload image if a new one is selected
         if (selectedImage) {
           const fileExt = selectedImage.name.split('.').pop();
           const fileName = `${user.id}-${Date.now()}.${fileExt}`;
@@ -175,19 +235,28 @@ const MyListings = () => {
           imageUrl = publicUrl;
         }
 
-        const { error } = await supabase.from("parts").insert({
-          supplier_id: user.id,
+        const payload = {
           part_name: formData.part_name,
           category: formData.category,
           condition: formData.condition,
           price: formData.price ? parseFloat(formData.price) : null,
           description: formData.description || null,
           location: formData.location || null,
-          image_url: imageUrl,
-        });
+          image_url: imageUrl ?? existingImageUrl,
+        };
 
-        if (error) throw error;
-        toast({ title: "Part listed successfully!" });
+        if (dialogMode === "edit" && editingId) {
+          const { error } = await supabase.from("parts").update(payload).eq("id", editingId);
+          if (error) throw error;
+          toast({ title: "Part updated successfully!" });
+        } else {
+          const { error } = await supabase.from("parts").insert({
+            supplier_id: user.id,
+            ...payload,
+          });
+          if (error) throw error;
+          toast({ title: "Part listed successfully!" });
+        }
       } else {
         const validation = requestSchema.safeParse({
           ...formData,
@@ -203,33 +272,31 @@ const MyListings = () => {
           return;
         }
 
-        const { error } = await supabase.from("part_requests").insert({
-          requester_id: user.id,
+        const payload = {
           part_name: formData.part_name,
           category: formData.category,
           condition_preference: formData.condition_preference || null,
           max_price: formData.max_price ? parseFloat(formData.max_price) : null,
           description: formData.description || null,
           location: formData.location || null,
-        });
+        };
 
-        if (error) throw error;
-        toast({ title: "Request created successfully!" });
+        if (dialogMode === "edit" && editingId) {
+          const { error } = await supabase.from("part_requests").update(payload).eq("id", editingId);
+          if (error) throw error;
+          toast({ title: "Request updated successfully!" });
+        } else {
+          const { error } = await supabase.from("part_requests").insert({
+            requester_id: user.id,
+            ...payload,
+          });
+          if (error) throw error;
+          toast({ title: "Request created successfully!" });
+        }
       }
 
       setDialogOpen(false);
-      setFormData({
-        part_name: "",
-        category: "",
-        condition: "new",
-        price: "",
-        max_price: "",
-        description: "",
-        location: "",
-        condition_preference: "",
-      });
-      setSelectedImage(null);
-      setImagePreview(null);
+      resetForm();
       fetchMyData(user.id);
     } catch (error: any) {
       toast({
