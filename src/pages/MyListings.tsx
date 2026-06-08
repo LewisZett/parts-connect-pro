@@ -364,17 +364,17 @@ const MyListings = () => {
             </TabsList>
 
             <TabsContent value="parts" className="space-y-4">
-              <Dialog open={dialogOpen && dialogType === "part"} onOpenChange={setDialogOpen}>
+              <Dialog open={dialogOpen && dialogType === "part"} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
                 <DialogTrigger asChild>
-                  <Button onClick={() => { setDialogType("part"); setDialogOpen(true); }} className="mb-4">
+                  <Button onClick={() => { setDialogType("part"); setDialogMode("create"); resetForm(); }} className="mb-4">
                     <Plus className="mr-2 h-4 w-4" />
                     List a Part
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>List a Part</DialogTitle>
-                    <DialogDescription>Add a part you want to sell</DialogDescription>
+                    <DialogTitle>{dialogMode === "edit" ? "Edit Part" : "List a Part"}</DialogTitle>
+                    <DialogDescription>{dialogMode === "edit" ? "Update your part listing" : "Add a part you want to sell"}</DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
@@ -477,7 +477,7 @@ const MyListings = () => {
                       </div>
                     </div>
                     <Button type="submit" className="w-full" disabled={uploading}>
-                      {uploading ? "Uploading..." : "List Part"}
+                      {uploading ? "Saving..." : dialogMode === "edit" ? "Update Part" : "List Part"}
                     </Button>
                   </form>
                 </DialogContent>
@@ -515,6 +515,15 @@ const MyListings = () => {
                         className="w-full mb-2"
                       />
                       <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full mb-2"
+                        onClick={() => openEditPart(part)}
+                      >
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                      </Button>
+                      <Button
                         variant="destructive"
                         size="sm"
                         className="w-full"
@@ -523,7 +532,6 @@ const MyListings = () => {
                         <Trash2 className="mr-2 h-4 w-4" />
                         Delete
                       </Button>
-
                     </CardContent>
                   </Card>
                 ))}
@@ -539,17 +547,17 @@ const MyListings = () => {
             </TabsContent>
 
             <TabsContent value="requests" className="space-y-4">
-              <Dialog open={dialogOpen && dialogType === "request"} onOpenChange={setDialogOpen}>
+              <Dialog open={dialogOpen && dialogType === "request"} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
                 <DialogTrigger asChild>
-                  <Button onClick={() => { setDialogType("request"); setDialogOpen(true); }} className="mb-4">
+                  <Button onClick={() => { setDialogType("request"); setDialogMode("create"); resetForm(); }} className="mb-4">
                     <Plus className="mr-2 h-4 w-4" />
                     Create a Request
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Create a Part Request</DialogTitle>
-                    <DialogDescription>Tell us what part you're looking for</DialogDescription>
+                    <DialogTitle>{dialogMode === "edit" ? "Edit Request" : "Create a Part Request"}</DialogTitle>
+                    <DialogDescription>{dialogMode === "edit" ? "Update your part request" : "Tell us what part you're looking for"}</DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
@@ -605,7 +613,9 @@ const MyListings = () => {
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       />
                     </div>
-                    <Button type="submit" className="w-full">Create Request</Button>
+                    <Button type="submit" className="w-full" disabled={uploading}>
+                      {uploading ? "Saving..." : dialogMode === "edit" ? "Update Request" : "Create Request"}
+                    </Button>
                   </form>
                 </DialogContent>
               </Dialog>
@@ -623,6 +633,15 @@ const MyListings = () => {
                         Budget: Up to ${request.max_price}
                       </p>}
                       <p className="text-xs text-muted-foreground mb-3">Status: {request.status}</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full mb-2"
+                        onClick={() => openEditRequest(request)}
+                      >
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                      </Button>
                       <Button
                         variant="destructive"
                         size="sm"
