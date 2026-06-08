@@ -13,9 +13,9 @@ export function AppLayout({ user, children }: AppLayoutProps) {
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
-        <div className="flex-1 flex flex-col w-full">
+        <div className="flex-1 flex flex-col w-full overflow-hidden">
           <Navbar user={user} />
-          <main className="flex-1">
+          <main className="flex-1 overflow-y-auto">
             {children}
           </main>
         </div>
