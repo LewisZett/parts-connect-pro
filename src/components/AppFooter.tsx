@@ -39,6 +39,7 @@ export function AppFooter() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 hover:text-primary transition-colors"
+                title={developerInfo.website}
               >
                 <Globe className="h-3.5 w-3.5 text-primary" />
                 <span>Website</span>
@@ -68,13 +69,13 @@ export function AppFooter() {
             )}
 
             {developerInfo.privacyPolicy ? (
-              <a
-                href={developerInfo.privacyPolicy}
+              <Link
+                to={developerInfo.privacyPolicy}
                 className="flex items-center gap-2 hover:text-primary transition-colors"
               >
                 <FileText className="h-3.5 w-3.5 text-primary" />
                 <span>Privacy Policy</span>
-              </a>
+              </Link>
             ) : (
               <div className="flex items-center gap-2 opacity-50" title="Privacy policy not available">
                 <FileText className="h-3.5 w-3.5" />
