@@ -168,107 +168,110 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10"></div>
-      <Card className="w-full max-w-md shadow-large relative z-10 glass-card glow-cyan">
-        <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="h-20 w-20 rounded-full bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center glow-cyan animate-pulse">
-              <img src={logo} alt="PARTSPRO" className="h-12 w-12 object-contain" />
+    <div className="min-h-screen flex flex-col bg-background">
+      <div className="flex-1 flex items-center justify-center p-4 relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10"></div>
+        <Card className="w-full max-w-md shadow-large relative z-10 glass-card glow-cyan">
+          <CardHeader className="space-y-1 text-center">
+            <div className="flex justify-center mb-4">
+              <div className="h-20 w-20 rounded-full bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center glow-cyan animate-pulse">
+                <img src={logo} alt="PARTSPRO" className="h-12 w-12 object-contain" />
+              </div>
             </div>
-          </div>
-          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-            {isLogin ? "WELCOME BACK" : "JOIN THE NETWORK"}
-          </CardTitle>
-          <CardDescription className="text-foreground/70">
-            {isLogin
-              ? "Access your command center"
-              : "Register for exclusive access"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleAuth} className="space-y-4">
-            {!isLogin && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="fullName" className="text-foreground font-orbitron">FULL NAME</Label>
-                  <Input
-                    id="fullName"
-                    placeholder="John Doe"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required={!isLogin}
-                    className="border-primary/30 focus:border-primary"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="tradeType" className="text-foreground font-orbitron">YOUR TRADE</Label>
-                  <Select value={tradeType} onValueChange={setTradeType} required={!isLogin}>
-                    <SelectTrigger className="border-primary/30 focus:border-primary">
-                      <SelectValue placeholder="Select your trade" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-card border-primary/30">
-                      <SelectItem value="phone_repair">Phone Repair</SelectItem>
-                      <SelectItem value="computer_tech">Computer Tech</SelectItem>
-                      <SelectItem value="car_mechanic">Car Mechanic</SelectItem>
-                      <SelectItem value="hvac">HVAC</SelectItem>
-                      <SelectItem value="appliance_repair">Appliance Repair</SelectItem>
-                      <SelectItem value="electronics">Electronics</SelectItem>
-                      <SelectItem value="general">General/Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-foreground font-orbitron">EMAIL</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="user@domain.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="border-primary/30 focus:border-primary"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-foreground font-orbitron">PASSWORD</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="border-primary/30 focus:border-primary"
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "LOADING..." : isLogin ? "ACCESS" : "REGISTER"}
-            </Button>
-          </form>
-          <div className="mt-4 flex items-center gap-3">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-xs text-muted-foreground font-orbitron">OR</span>
-            <div className="h-px flex-1 bg-border" />
-          </div>
-          <div className="mt-4">
-            <PiSignInButton className="w-full" />
-          </div>
-          <div className="mt-4 text-center text-sm">
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-primary hover:text-primary/80 transition-colors font-orbitron"
-            >
+            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              {isLogin ? "WELCOME BACK" : "JOIN THE NETWORK"}
+            </CardTitle>
+            <CardDescription className="text-foreground/70">
               {isLogin
-                ? "NEW USER? REGISTER HERE"
-                : "EXISTING USER? LOGIN HERE"}
-            </button>
-          </div>
-        </CardContent>
-      </Card>
+                ? "Access your command center"
+                : "Register for exclusive access"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleAuth} className="space-y-4">
+              {!isLogin && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName" className="text-foreground font-orbitron">FULL NAME</Label>
+                    <Input
+                      id="fullName"
+                      placeholder="John Doe"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required={!isLogin}
+                      className="border-primary/30 focus:border-primary"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="tradeType" className="text-foreground font-orbitron">YOUR TRADE</Label>
+                    <Select value={tradeType} onValueChange={setTradeType} required={!isLogin}>
+                      <SelectTrigger className="border-primary/30 focus:border-primary">
+                        <SelectValue placeholder="Select your trade" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-card border-primary/30">
+                        <SelectItem value="phone_repair">Phone Repair</SelectItem>
+                        <SelectItem value="computer_tech">Computer Tech</SelectItem>
+                        <SelectItem value="car_mechanic">Car Mechanic</SelectItem>
+                        <SelectItem value="hvac">HVAC</SelectItem>
+                        <SelectItem value="appliance_repair">Appliance Repair</SelectItem>
+                        <SelectItem value="electronics">Electronics</SelectItem>
+                        <SelectItem value="general">General/Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-foreground font-orbitron">EMAIL</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="user@domain.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="border-primary/30 focus:border-primary"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-foreground font-orbitron">PASSWORD</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="border-primary/30 focus:border-primary"
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "LOADING..." : isLogin ? "ACCESS" : "REGISTER"}
+              </Button>
+            </form>
+            <div className="mt-4 flex items-center gap-3">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs text-muted-foreground font-orbitron">OR</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+            <div className="mt-4">
+              <PiSignInButton className="w-full" />
+            </div>
+            <div className="mt-4 text-center text-sm">
+              <button
+                type="button"
+                onClick={() => setIsLogin(!isLogin)}
+                className="text-primary hover:text-primary/80 transition-colors font-orbitron"
+              >
+                {isLogin
+                  ? "NEW USER? REGISTER HERE"
+                  : "EXISTING USER? LOGIN HERE"}
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      <AppFooter />
     </div>
   );
 };
