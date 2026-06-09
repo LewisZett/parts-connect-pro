@@ -9,6 +9,7 @@ import Browse from "./pages/Browse";
 import MyListings from "./pages/MyListings";
 import Matches from "./pages/Matches";
 import Profile from "./pages/Profile";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 import { usePiAuth } from "@/hooks/usePiAuth";
 import { useEffect, useRef } from "react";
