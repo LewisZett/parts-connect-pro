@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/gear-puzzle-icon.png";
 import { PiSignInButton } from "@/components/PiSignInButton";
+import { AppFooter } from "@/components/AppFooter";
 import { z } from "zod";
 
 const authSchema = z.object({
