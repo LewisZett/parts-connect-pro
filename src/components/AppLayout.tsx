@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { AppFooter } from "@/components/AppFooter";
 import Navbar from "@/components/Navbar";
 
 interface AppLayoutProps {
@@ -18,6 +19,7 @@ export function AppLayout({ user, children }: AppLayoutProps) {
           <main className="flex-1 overflow-y-auto">
             {children}
           </main>
+          <AppFooter />
         </div>
       </div>
     </SidebarProvider>
