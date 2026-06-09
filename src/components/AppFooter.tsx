@@ -1,11 +1,12 @@
-import { Github, Globe, Mail, User, FileText, MessageSquare } from "lucide-react";
+import { Github, Globe, Mail, User, FileText } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const developerInfo = {
   name: "Lewis Zengeni",
   email: "zengenilewis@gmail.com",
-  website: null as string | null,
+  website: "https://parts-connect-pro.lovable.app",
   repository: null as string | null,
-  privacyPolicy: null as string | null,
+  privacyPolicy: "/privacy",
 };
 
 export function AppFooter() {
@@ -38,6 +39,7 @@ export function AppFooter() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 hover:text-primary transition-colors"
+                title={developerInfo.website}
               >
                 <Globe className="h-3.5 w-3.5 text-primary" />
                 <span>Website</span>
@@ -67,13 +69,13 @@ export function AppFooter() {
             )}
 
             {developerInfo.privacyPolicy ? (
-              <a
-                href={developerInfo.privacyPolicy}
+              <Link
+                to={developerInfo.privacyPolicy}
                 className="flex items-center gap-2 hover:text-primary transition-colors"
               >
                 <FileText className="h-3.5 w-3.5 text-primary" />
                 <span>Privacy Policy</span>
-              </a>
+              </Link>
             ) : (
               <div className="flex items-center gap-2 opacity-50" title="Privacy policy not available">
                 <FileText className="h-3.5 w-3.5" />
