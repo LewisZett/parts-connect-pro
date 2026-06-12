@@ -67,8 +67,8 @@ const Dashboard = () => {
         {/* How It Works Section */}
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="how-it-works" className="border-none">
-            <AccordionTrigger className="text-3xl md:text-4xl font-bold text-foreground font-orbitron justify-center hover:no-underline">
-              How It Works
+            <AccordionTrigger className="text-3xl md:text-4xl font-bold text-foreground font-orbitron hover:no-underline cursor-pointer">
+              <span className="flex-1 text-center">How It Works</span>
             </AccordionTrigger>
             <AccordionContent>
               <p className="text-muted-foreground max-w-2xl mx-auto text-center mb-8">
