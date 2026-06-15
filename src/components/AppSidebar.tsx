@@ -1,5 +1,5 @@
-import { Home, List, MessageSquare, User, LogOut, Search, Package, FileText, Users } from "lucide-react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Home, List, MessageSquare, User, LogOut, Search, Package, FileText, Users, Mail, Globe } from "lucide-react";
+import { NavLink, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
@@ -22,6 +22,13 @@ const navigationItems = [
   { title: "Matches & Messages", url: "/matches", icon: MessageSquare },
   { title: "PROFILE", url: "/profile", icon: User },
 ];
+
+const developerInfo = {
+  name: "Lewis Zengeni",
+  email: "zengenilewis@gmail.com",
+  website: "https://parts-connect-pro.lovable.app",
+  privacyPolicy: "/privacy",
+};
 
 export function AppSidebar() {
   const { state } = useSidebar();
@@ -131,6 +138,46 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Developer Contacts */}
+        {!isCollapsed && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-sidebar-foreground text-sm font-orbitron">
+              Developer
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <div className="px-4 py-2 space-y-3 text-sidebar-foreground">
+                <div className="flex items-center gap-2 text-sm">
+                  <User className="h-4 w-4 text-primary" />
+                  <span>{developerInfo.name}</span>
+                </div>
+                <a
+                  href={`mailto:${developerInfo.email}`}
+                  className="flex items-center gap-2 text-sm hover:text-primary transition-colors"
+                >
+                  <Mail className="h-4 w-4 text-primary" />
+                  <span>Contact</span>
+                </a>
+                <a
+                  href={developerInfo.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-sm hover:text-primary transition-colors"
+                >
+                  <Globe className="h-4 w-4 text-primary" />
+                  <span>Website</span>
+                </a>
+                <Link
+                  to={developerInfo.privacyPolicy}
+                  className="flex items-center gap-2 text-sm hover:text-primary transition-colors"
+                >
+                  <FileText className="h-4 w-4 text-primary" />
+                  <span>Privacy Policy</span>
+                </Link>
+              </div>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
     </Sidebar>
   );
