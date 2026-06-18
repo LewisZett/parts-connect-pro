@@ -102,24 +102,23 @@ serve(async (req) => {
     }
 
 
-    // Check for suspicious activity if user_id is provided
+    // Check for suspicious activity (only when user_id was verified via JWT)
     let suspiciousActivity = null;
-    if (event.user_id && event.event_category === 'authentication') {
+    if (safeUserId && event.event_category === 'authentication') {
       const { data, error: rpcError } = await supabase
         .rpc('detect_suspicious_login_activity', {
-          p_user_id: event.user_id,
+          p_user_id: safeUserId,
           p_ip_address: ip_address,
         });
 
       if (!rpcError && data) {
         suspiciousActivity = data;
-        
-        // Log suspicious activity detection if flagged
+
         if (data.is_suspicious) {
-          console.warn(`Suspicious activity detected for user ${event.user_id}:`, data);
-          
+          console.warn(`Suspicious activity detected for user ${safeUserId}`);
+
           await supabase.from('security_events').insert({
-            user_id: event.user_id,
+            user_id: safeUserId,
             event_type: 'suspicious_activity_detected',
             event_category: 'security',
             severity: 'high',
@@ -130,6 +129,7 @@ serve(async (req) => {
         }
       }
     }
+
 
     console.log(`Security event logged: ${event.event_type} (${event.severity})`);
 
