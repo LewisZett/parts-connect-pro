@@ -8,7 +8,10 @@ declare global {
 }
 
 const STORAGE_KEY = "pi_network_session";
-const SANDBOX_MODE = true; // set to false in production Pi Browser
+// Sandbox is enabled outside production builds; production builds (e.g. Pi Browser deploys) hit mainnet.
+const SANDBOX_MODE =
+  (import.meta.env.VITE_PI_SANDBOX ?? (import.meta.env.PROD ? "false" : "true")) === "true";
+
 
 export interface PiSession {
   provider: "pi-network";
