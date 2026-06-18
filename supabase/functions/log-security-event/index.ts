@@ -36,18 +36,58 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Resolve authenticated user (if any) from JWT
+    const authHeader = req.headers.get('Authorization') || '';
+    const token = authHeader.replace('Bearer ', '');
+    let authedUserId: string | null = null;
+    if (token) {
+      const authClient = createClient(supabaseUrl, anonKey);
+      const { data: userData } = await authClient.auth.getUser(token);
+      authedUserId = userData?.user?.id ?? null;
+    }
+
+    // Allowlist of event types acceptable without authentication (pre-login flows)
+    const PRE_AUTH_EVENT_TYPES = new Set([
+      'login_failed',
+      'signup_attempt',
+      'password_reset_requested',
+    ]);
+
+    // Trust user_id only if it matches the verified JWT; otherwise drop it
+    let safeUserId: string | null = null;
+    if (event.user_id) {
+      if (authedUserId && authedUserId === event.user_id) {
+        safeUserId = authedUserId;
+      } else {
+        // Reject impersonation attempts
+        return new Response(
+          JSON.stringify({ error: 'Forbidden: user_id does not match authenticated session' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    } else if (authedUserId) {
+      safeUserId = authedUserId;
+    } else if (!PRE_AUTH_EVENT_TYPES.has(event.event_type)) {
+      // Anonymous callers may only log allowlisted pre-auth events
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Extract IP and user agent from request headers
-    const ip_address = event.ip_address || req.headers.get('x-forwarded-for') || 
+    const ip_address = req.headers.get('x-forwarded-for') ||
                        req.headers.get('x-real-ip') || 'unknown';
-    const user_agent = event.user_agent || req.headers.get('user-agent') || 'unknown';
+    const user_agent = req.headers.get('user-agent') || 'unknown';
 
     // Log the security event
     const { error: insertError } = await supabase
       .from('security_events')
       .insert({
-        user_id: event.user_id || null,
+        user_id: safeUserId,
         event_type: event.event_type,
         event_category: event.event_category,
         severity: event.severity,
@@ -60,6 +100,7 @@ serve(async (req) => {
       console.error("Error logging security event:", insertError);
       throw insertError;
     }
+
 
     // Check for suspicious activity if user_id is provided
     let suspiciousActivity = null;
