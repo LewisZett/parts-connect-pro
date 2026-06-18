@@ -56,8 +56,9 @@ export const PdfUpload = () => {
       setParsing(true);
 
       const { data, error } = await supabase.functions.invoke('parse-parts-pdf', {
-        body: { filePath: fileName, userId: user.id },
+        body: { filePath: fileName },
       });
+
 
       if (error) throw error;
 
