@@ -11,7 +11,7 @@ interface PiSignInButtonProps {
   size?: ButtonProps["size"];
 }
 
-export function PiSignInButton({ autoTrigger = false, className }: PiSignInButtonProps) {
+export function PiSignInButton({ autoTrigger = false, className, size }: PiSignInButtonProps) {
   const { session, loading, signIn, signOut } = usePiAuth();
   const { toast } = useToast();
   const autoTriedRef = useRef(false);
