@@ -41,21 +41,28 @@ async function ensurePiInit() {
   await Promise.resolve(window.Pi.init({ version: "2.0", sandbox: true }));
 }
 
-async function ensurePaymentsScope() {
+let currentPiAccessToken: string | null = null;
+
+async function ensurePaymentsScope(): Promise<string> {
   // Pi requires authenticating with the 'payments' scope before createPayment.
-  await window.Pi!.authenticate(["username", "payments"], onIncompletePaymentFound);
+  const result = await window.Pi!.authenticate(["username", "payments"], onIncompletePaymentFound);
+  const token: string | undefined = result?.accessToken;
+  if (!token) throw new Error("Pi authentication did not return an access token");
+  currentPiAccessToken = token;
+  return token;
 }
 
 function onIncompletePaymentFound(payment: any) {
   console.warn("[Pi] Incomplete payment found:", payment);
   const paymentId = payment?.identifier;
   const txid = payment?.transaction?.txid;
-  if (paymentId && txid) {
+  if (paymentId && txid && currentPiAccessToken) {
     supabase.functions.invoke("pi-payments", {
-      body: { action: "complete", paymentId, txid },
+      body: { action: "complete", paymentId, txid, piAccessToken: currentPiAccessToken },
     });
   }
 }
+
 
 export function usePiPayments() {
   const [paying, setPaying] = useState(false);
@@ -66,7 +73,7 @@ export function usePiPayments() {
     setError(null);
     try {
       await ensurePiInit();
-      await ensurePaymentsScope();
+      const piAccessToken = await ensurePaymentsScope();
 
       return await new Promise<{ paymentId: string; txid: string }>((resolve, reject) => {
         window.Pi!.createPayment(
@@ -78,7 +85,7 @@ export function usePiPayments() {
           {
             onReadyForServerApproval: async (paymentId: string) => {
               const { data, error } = await supabase.functions.invoke("pi-payments", {
-                body: { action: "approve", paymentId },
+                body: { action: "approve", paymentId, piAccessToken },
               });
               if (error || !data?.success) {
                 console.error("[Pi] approve failed", error, data);
@@ -87,7 +94,7 @@ export function usePiPayments() {
             },
             onReadyForServerCompletion: async (paymentId: string, txid: string) => {
               const { data, error } = await supabase.functions.invoke("pi-payments", {
-                body: { action: "complete", paymentId, txid },
+                body: { action: "complete", paymentId, txid, piAccessToken },
               });
               if (error || !data?.success) {
                 console.error("[Pi] complete failed", error, data);
@@ -96,6 +103,7 @@ export function usePiPayments() {
               }
               resolve({ paymentId, txid });
             },
+
             onCancel: (paymentId: string) => {
               console.warn("[Pi] payment cancelled", paymentId);
               reject(new Error("Payment cancelled"));

@@ -8,7 +8,10 @@ declare global {
 }
 
 const STORAGE_KEY = "pi_network_session";
-const SANDBOX_MODE = true; // set to false in production Pi Browser
+// Sandbox is enabled outside production builds; production builds (e.g. Pi Browser deploys) hit mainnet.
+const SANDBOX_MODE =
+  (import.meta.env.VITE_PI_SANDBOX ?? (import.meta.env.PROD ? "false" : "true")) === "true";
+
 
 export interface PiSession {
   provider: "pi-network";
@@ -56,21 +59,24 @@ async function ensurePiInit(): Promise<void> {
   return initPromise;
 }
 
-function onIncompletePaymentFound(payment: any) {
-  // Complete any in-flight Pi payment found at auth time.
-  console.warn("[Pi] Incomplete payment found, completing via backend:", payment);
-  try {
-    const paymentId = payment?.identifier;
-    const txid = payment?.transaction?.txid;
-    if (paymentId && txid) {
-      supabase.functions.invoke("pi-payments", {
-        body: { action: "complete", paymentId, txid },
-      });
+function makeOnIncompletePaymentFound(accessToken: string) {
+  return function onIncompletePaymentFound(payment: any) {
+    // Complete any in-flight Pi payment found at auth time.
+    console.warn("[Pi] Incomplete payment found, completing via backend:", payment);
+    try {
+      const paymentId = payment?.identifier;
+      const txid = payment?.transaction?.txid;
+      if (paymentId && txid && accessToken) {
+        supabase.functions.invoke("pi-payments", {
+          body: { action: "complete", paymentId, txid, piAccessToken: accessToken },
+        });
+      }
+    } catch (e) {
+      console.error("[Pi] Failed to complete incomplete payment:", e);
     }
-  } catch (e) {
-    console.error("[Pi] Failed to complete incomplete payment:", e);
-  }
+  };
 }
+
 
 
 export function usePiAuth() {
@@ -91,9 +97,15 @@ export function usePiAuth() {
     try {
       await ensurePiInit();
 
-      const authResult = await window.Pi!.authenticate(["username", "payments"], onIncompletePaymentFound);
+      // Authenticate with a temporary handler; once we have the access token, complete uses it.
+      let latestAccessToken = "";
+      const authResult = await window.Pi!.authenticate(
+        ["username", "payments"],
+        (payment: any) => makeOnIncompletePaymentFound(latestAccessToken)(payment),
+      );
       const accessToken: string = authResult?.accessToken;
       if (!accessToken) throw new Error("No accessToken returned by Pi.authenticate");
+      latestAccessToken = accessToken;
 
       // Server-side validation via /v2/me
       const { data, error: fnError } = await supabase.functions.invoke("pi-auth-verify", {

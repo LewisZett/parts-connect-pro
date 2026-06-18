@@ -71,12 +71,12 @@ export const TextBulkUpload = () => {
       );
 
       const { data, error } = await supabase.functions.invoke('parse-parts-text', {
-        body: { 
-          text: text.trim() || undefined, 
+        body: {
+          text: text.trim() || undefined,
           images: imageData.length > 0 ? imageData : undefined,
-          userId: user.id 
         },
       });
+
 
       if (error) throw error;
 

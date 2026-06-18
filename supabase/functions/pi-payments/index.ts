@@ -38,6 +38,21 @@ async function piFetch(path: string, init: RequestInit = {}) {
   });
 }
 
+async function verifyPiUser(accessToken: string): Promise<{ uid: string; username?: string } | null> {
+  try {
+    const res = await fetch(`${PI_API}/v2/me`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data?.uid) return null;
+    return { uid: data.uid, username: data.username };
+  } catch (e) {
+    console.error("Pi /v2/me failed:", e);
+    return null;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -45,8 +60,17 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { action, paymentId } = body ?? {};
+    const { action, paymentId, piAccessToken } = body ?? {};
     if (!action || !paymentId) return json({ success: false, error: "Missing action or paymentId" }, 400);
+
+    // Require a Pi access token and verify it server-side so we know who is calling.
+    if (!piAccessToken || typeof piAccessToken !== "string") {
+      return json({ success: false, error: "Missing piAccessToken" }, 401);
+    }
+    const piUser = await verifyPiUser(piAccessToken);
+    if (!piUser) {
+      return json({ success: false, error: "Invalid Pi access token" }, 401);
+    }
 
     if (action === "approve") {
       // Fetch payment details from Pi to validate amount/memo/metadata server-side.
@@ -57,6 +81,11 @@ Deno.serve(async (req) => {
         return json({ success: false, error: "Pi payment lookup failed" }, 502);
       }
       const details = await detailsRes.json();
+
+      // Ensure the caller owns this payment.
+      if (details.user_uid !== piUser.uid) {
+        return json({ success: false, error: "Forbidden: payment does not belong to caller" }, 403);
+      }
 
       // Persist a 'created' record (idempotent upsert by payment_id).
       await supabase.from("pi_payments").upsert(
@@ -87,6 +116,29 @@ Deno.serve(async (req) => {
       const { txid } = body;
       if (!txid) return json({ success: false, error: "Missing txid" }, 400);
 
+      // Load existing record to confirm caller owns the payment.
+      const { data: rec } = await supabase
+        .from("pi_payments")
+        .select("*")
+        .eq("payment_id", paymentId)
+        .maybeSingle();
+
+      if (rec && rec.pi_uid && rec.pi_uid !== piUser.uid) {
+        return json({ success: false, error: "Forbidden: payment does not belong to caller" }, 403);
+      }
+
+      // If no prior record exists, double-check ownership via Pi API.
+      if (!rec) {
+        const detailsRes = await piFetch(`/v2/payments/${paymentId}`);
+        if (!detailsRes.ok) {
+          return json({ success: false, error: "Pi payment lookup failed" }, 502);
+        }
+        const details = await detailsRes.json();
+        if (details.user_uid !== piUser.uid) {
+          return json({ success: false, error: "Forbidden: payment does not belong to caller" }, 403);
+        }
+      }
+
       const completeRes = await piFetch(`/v2/payments/${paymentId}/complete`, {
         method: "POST",
         body: JSON.stringify({ txid }),
@@ -96,13 +148,6 @@ Deno.serve(async (req) => {
         console.error("Pi complete failed:", completeRes.status, t);
         return json({ success: false, error: "Pi complete failed" }, 502);
       }
-
-      // Load record to apply product effect
-      const { data: rec } = await supabase
-        .from("pi_payments")
-        .select("*")
-        .eq("payment_id", paymentId)
-        .maybeSingle();
 
       await supabase
         .from("pi_payments")
@@ -124,3 +169,4 @@ Deno.serve(async (req) => {
     return json({ success: false, error: (e as Error).message }, 500);
   }
 });
+
