@@ -46,7 +46,12 @@ export function PiSignInButton({ autoTrigger = false, className, size }: PiSignI
   };
 
   return (
-    <Button onClick={handleClick} disabled={loading} className={className} variant="outline" size={size}>
+    <Button
+      onClick={handleClick}
+      disabled={loading}
+      className={`bg-purple-600 text-white border-purple-600 hover:bg-purple-700 hover:text-white hover:border-purple-700 ${className || ""}`}
+      size={size}
+    >
       {loading ? "Connecting…" : session ? `Pi: ${session.username}` : "Sign in with Pi"}
     </Button>
   );
