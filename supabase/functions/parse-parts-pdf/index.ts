@@ -12,15 +12,43 @@ serve(async (req) => {
   }
 
   try {
-    const { filePath, userId } = await req.json();
-    console.log('Parsing PDF:', { filePath, userId });
-
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
 
     if (!lovableApiKey) {
       throw new Error('LOVABLE_API_KEY is not configured');
+    }
+
+    // Verify caller JWT
+    const authHeader = req.headers.get('Authorization') || '';
+    const token = authHeader.replace('Bearer ', '');
+    if (!token) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const authClient = createClient(supabaseUrl, anonKey);
+    const { data: userData, error: authError } = await authClient.auth.getUser(token);
+    if (authError || !userData?.user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const userId = userData.user.id;
+
+    const { filePath } = await req.json();
+    console.log('Parsing PDF:', { filePath, userId });
+
+    // Ensure file belongs to the calling user
+    if (typeof filePath !== 'string' || !filePath.startsWith(`${userId}/`)) {
+      return new Response(JSON.stringify({ error: 'Forbidden: filePath must be in your own folder' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -36,6 +64,7 @@ serve(async (req) => {
       console.error('Download error:', downloadError);
       throw new Error(`Failed to download file: ${downloadError.message}`);
     }
+
 
     // Convert to base64 for AI processing
     const arrayBuffer = await fileData.arrayBuffer();
