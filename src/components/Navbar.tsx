@@ -68,11 +68,11 @@ const Navbar = ({ user }: NavbarProps) => {
                   <span className="text-xs">Matches</span>
                 </div>
               </div>
-              <PiSignInButton />
+              <PiSignInButton size="sm" className="text-xs px-2" />
             </div>
           ) : (
-            <div className="flex items-center gap-3">
-              <PiSignInButton />
+            <div className="flex items-center gap-2">
+              <PiSignInButton size="sm" className="text-xs px-2" />
               <button
                 onClick={() => navigate("/auth")}
                 className="px-6 py-2 bg-primary text-primary-foreground rounded-md font-semibold hover:bg-primary/90 transition-colors"

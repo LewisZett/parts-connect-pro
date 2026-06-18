@@ -3,12 +3,15 @@ import { usePiAuth } from "@/hooks/usePiAuth";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
+import { ButtonProps } from "@/components/ui/button";
+
 interface PiSignInButtonProps {
   autoTrigger?: boolean;
   className?: string;
+  size?: ButtonProps["size"];
 }
 
-export function PiSignInButton({ autoTrigger = false, className }: PiSignInButtonProps) {
+export function PiSignInButton({ autoTrigger = false, className, size }: PiSignInButtonProps) {
   const { session, loading, signIn, signOut } = usePiAuth();
   const { toast } = useToast();
   const autoTriedRef = useRef(false);
@@ -43,7 +46,7 @@ export function PiSignInButton({ autoTrigger = false, className }: PiSignInButto
   };
 
   return (
-    <Button onClick={handleClick} disabled={loading} className={className} variant="outline">
+    <Button onClick={handleClick} disabled={loading} className={className} variant="outline" size={size}>
       {loading ? "Connecting…" : session ? `Pi: ${session.username}` : "Sign in with Pi"}
     </Button>
   );
