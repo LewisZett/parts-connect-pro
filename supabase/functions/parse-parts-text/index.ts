@@ -12,18 +12,39 @@ serve(async (req) => {
   }
 
   try {
-    const { text, images, userId } = await req.json();
-    console.log('Parsing parts list for user:', userId, { hasText: !!text, imageCount: images?.length || 0 });
-
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
 
     if (!lovableApiKey) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
+    // Verify caller JWT
+    const authHeader = req.headers.get('Authorization') || '';
+    const token = authHeader.replace('Bearer ', '');
+    if (!token) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const authClient = createClient(supabaseUrl, anonKey);
+    const { data: userData, error: authError } = await authClient.auth.getUser(token);
+    if (authError || !userData?.user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const userId = userData.user.id;
+
+    const { text, images } = await req.json();
+    console.log('Parsing parts list for user:', userId, { hasText: !!text, imageCount: images?.length || 0 });
+
     const supabase = createClient(supabaseUrl, supabaseKey);
+
 
     // Build messages for AI
     const messages: any[] = [
