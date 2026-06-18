@@ -97,9 +97,15 @@ export function usePiAuth() {
     try {
       await ensurePiInit();
 
-      const authResult = await window.Pi!.authenticate(["username", "payments"], onIncompletePaymentFound);
+      // Authenticate with a temporary handler; once we have the access token, complete uses it.
+      let latestAccessToken = "";
+      const authResult = await window.Pi!.authenticate(
+        ["username", "payments"],
+        (payment: any) => makeOnIncompletePaymentFound(latestAccessToken)(payment),
+      );
       const accessToken: string = authResult?.accessToken;
       if (!accessToken) throw new Error("No accessToken returned by Pi.authenticate");
+      latestAccessToken = accessToken;
 
       // Server-side validation via /v2/me
       const { data, error: fnError } = await supabase.functions.invoke("pi-auth-verify", {
