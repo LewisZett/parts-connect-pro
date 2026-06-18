@@ -3,9 +3,12 @@ import { usePiAuth } from "@/hooks/usePiAuth";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
+import { ButtonProps } from "@/components/ui/button";
+
 interface PiSignInButtonProps {
   autoTrigger?: boolean;
   className?: string;
+  size?: ButtonProps["size"];
 }
 
 export function PiSignInButton({ autoTrigger = false, className }: PiSignInButtonProps) {
