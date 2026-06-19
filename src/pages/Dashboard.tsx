@@ -5,27 +5,14 @@ import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
-import { Loader2, Upload, Zap, Shield, CheckCircle, Rocket, Package, MapPin } from "lucide-react";
+import { Loader2, Upload, Zap, Shield, CheckCircle } from "lucide-react";
+import { AdSlotsShowcase } from "@/components/AdSlotsShowcase";
 
-interface BoostedPart {
-  id: string;
-  part_name: string;
-  category: string;
-  condition: string;
-  price: number | null;
-  location: string | null;
-  image_url: string | null;
-  supplier_id: string;
-  public_profiles: { full_name: string | null; trade_type: string | null } | null;
-}
 
 const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [howItWorksOpen, setHowItWorksOpen] = useState(false);
-  const [boostedParts, setBoostedParts] = useState<BoostedPart[]>([]);
-  const [boostedLoading, setBoostedLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
