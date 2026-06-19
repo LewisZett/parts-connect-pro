@@ -5,27 +5,14 @@ import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
-import { Loader2, Upload, Zap, Shield, CheckCircle, Rocket, Package, MapPin } from "lucide-react";
+import { Loader2, Upload, Zap, Shield, CheckCircle } from "lucide-react";
+import { AdSlotsShowcase } from "@/components/AdSlotsShowcase";
 
-interface BoostedPart {
-  id: string;
-  part_name: string;
-  category: string;
-  condition: string;
-  price: number | null;
-  location: string | null;
-  image_url: string | null;
-  supplier_id: string;
-  public_profiles: { full_name: string | null; trade_type: string | null } | null;
-}
 
 const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [howItWorksOpen, setHowItWorksOpen] = useState(false);
-  const [boostedParts, setBoostedParts] = useState<BoostedPart[]>([]);
-  const [boostedLoading, setBoostedLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,54 +35,6 @@ const Dashboard = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  useEffect(() => {
-    const fetchBoostedParts = async () => {
-      setBoostedLoading(true);
-      try {
-        const now = new Date().toISOString();
-        const { data: partsData, error } = await supabase
-          .from("parts")
-          .select("id, part_name, category, condition, price, location, image_url, supplier_id, boosted_until")
-          .gt("boosted_until", now)
-          .eq("status", "available")
-          .order("boosted_until", { ascending: false })
-          .limit(12);
-
-        if (error || !partsData || partsData.length === 0) {
-          setBoostedParts([]);
-          setBoostedLoading(false);
-          return;
-        }
-
-        const supplierIds = Array.from(new Set(partsData.map((p: any) => p.supplier_id).filter(Boolean)));
-        let profilesById: Record<string, any> = {};
-        if (supplierIds.length > 0) {
-          const { data: profilesData } = await supabase
-            .from("public_profiles")
-            .select("id, full_name, trade_type")
-            .in("id", supplierIds);
-          if (profilesData) {
-            profilesById = Object.fromEntries(profilesData.map((p: any) => [p.id, p]));
-          }
-        }
-
-        const enriched = partsData.map((p: any) => ({
-          ...p,
-          public_profiles: profilesById[p.supplier_id] ?? null,
-        }));
-
-        // Duplicate the list so the marquee can scroll seamlessly
-        setBoostedParts([...enriched, ...enriched]);
-      } catch (e) {
-        console.error("Error fetching boosted parts:", e);
-        setBoostedParts([]);
-      } finally {
-        setBoostedLoading(false);
-      }
-    };
-
-    fetchBoostedParts();
-  }, []);
 
   if (loading) {
     return (
@@ -234,84 +173,8 @@ const Dashboard = () => {
           </AccordionItem>
         </Accordion>
 
-        {/* Boosted Parts Marquee — only when How It Works is collapsed */}
-        {!howItWorksOpen && (
-          <div className="space-y-4 animate-fade-in">
-            <div className="flex items-center justify-center gap-2">
-              <Rocket className="h-5 w-5 text-secondary" />
-              <h2 className="text-xl md:text-2xl font-bold text-foreground font-orbitron">
-                Featured Listings
-              </h2>
-              <Rocket className="h-5 w-5 text-secondary" />
-            </div>
-
-            {boostedLoading ? (
-              <div className="flex justify-center py-6">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              </div>
-            ) : boostedParts.length === 0 ? (
-              <p className="text-center text-muted-foreground text-sm">
-                No boosted listings right now — be the first to boost yours!
-              </p>
-            ) : (
-              <div className="relative overflow-hidden py-2">
-                {/* Fade edges */}
-                <div className="pointer-events-none absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-background to-transparent z-10" />
-                <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-background to-transparent z-10" />
-
-                <div className="flex gap-4 animate-marquee whitespace-nowrap hover:[animation-play-state:paused]">
-                  {boostedParts.map((part, idx) => (
-                    <button
-                      key={`${part.id}-${idx}`}
-                      onClick={() => navigate("/browse")}
-                      className="inline-flex items-center gap-3 bg-card border border-primary/20 rounded-full px-4 py-2 shadow-soft hover:shadow-medium hover:border-primary/40 transition-all duration-200 group"
-                    >
-                      {part.image_url ? (
-                        <img
-                          src={part.image_url}
-                          alt={part.part_name}
-                          className="w-10 h-10 rounded-full object-cover border border-primary/30"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/30">
-                          <Package className="w-5 h-5 text-primary" />
-                        </div>
-                      )}
-                      <div className="text-left">
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-foreground font-orbitron text-sm group-hover:text-primary transition-colors">
-                            {part.part_name}
-                          </span>
-                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-secondary/20 text-secondary border border-secondary/40">
-                            BOOSTED
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span>{part.category}</span>
-                          {part.location && (
-                            <>
-                              <span>•</span>
-                              <span className="flex items-center gap-0.5">
-                                <MapPin className="h-3 w-3" />
-                                {part.location}
-                              </span>
-                            </>
-                          )}
-                          {part.price !== null && (
-                            <>
-                              <span>•</span>
-                              <span className="text-primary font-semibold">${part.price}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+        {/* Ad Slots Showcase — only when How It Works is collapsed */}
+        {!howItWorksOpen && <AdSlotsShowcase />}
       </div>
     </AppLayout>
   );

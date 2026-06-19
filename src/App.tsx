@@ -11,6 +11,7 @@ import Matches from "./pages/Matches";
 import Profile from "./pages/Profile";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
+import AdminAds from "./pages/AdminAds";
 import { usePiAuth } from "@/hooks/usePiAuth";
 import { useEffect, useRef } from "react";
 
@@ -42,6 +43,7 @@ const App = () => (
           <Route path="/matches" element={<Matches />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/admin/ads" element={<AdminAds />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

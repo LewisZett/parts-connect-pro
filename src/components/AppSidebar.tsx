@@ -1,4 +1,4 @@
-import { Home, List, MessageSquare, User, LogOut, Search, Package, FileText, Users, Mail, Globe } from "lucide-react";
+import { Home, List, MessageSquare, User, LogOut, Search, Package, FileText, Users, Mail, Globe, Shield } from "lucide-react";
 import { NavLink, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -36,20 +36,24 @@ export function AppSidebar() {
   const { toast } = useToast();
   const [stats, setStats] = useState({ parts: 0, requests: 0, matches: 0 });
   const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    const loadFor = async (uid: string) => {
+      fetchStats(uid);
+      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid);
+      setIsAdmin((roles ?? []).some((r: any) => r.role === "admin"));
+    };
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
-      if (session?.user?.id) {
-        fetchStats(session.user.id);
-      }
+      if (session?.user?.id) loadFor(session.user.id);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
-      if (session?.user?.id) {
-        fetchStats(session.user.id);
-      }
+      if (session?.user?.id) loadFor(session.user.id);
+      else setIsAdmin(false);
     });
 
     return () => subscription.unsubscribe();
@@ -129,6 +133,23 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              {isAdmin && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to="/admin/ads"
+                      className={({ isActive }) =>
+                        isActive
+                          ? "bg-sidebar-accent text-sidebar-primary font-medium"
+                          : "hover:bg-sidebar-accent/50"
+                      }
+                    >
+                      <Shield className="h-5 w-5" />
+                      {!isCollapsed && <span>Admin: Ad Slots</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
               <SidebarMenuItem>
                 <SidebarMenuButton onClick={handleLogout}>
                   <LogOut className="h-5 w-5" />
