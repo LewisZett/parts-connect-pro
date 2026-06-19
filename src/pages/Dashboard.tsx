@@ -35,54 +35,6 @@ const Dashboard = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  useEffect(() => {
-    const fetchBoostedParts = async () => {
-      setBoostedLoading(true);
-      try {
-        const now = new Date().toISOString();
-        const { data: partsData, error } = await supabase
-          .from("parts")
-          .select("id, part_name, category, condition, price, location, image_url, supplier_id, boosted_until")
-          .gt("boosted_until", now)
-          .eq("status", "available")
-          .order("boosted_until", { ascending: false })
-          .limit(12);
-
-        if (error || !partsData || partsData.length === 0) {
-          setBoostedParts([]);
-          setBoostedLoading(false);
-          return;
-        }
-
-        const supplierIds = Array.from(new Set(partsData.map((p: any) => p.supplier_id).filter(Boolean)));
-        let profilesById: Record<string, any> = {};
-        if (supplierIds.length > 0) {
-          const { data: profilesData } = await supabase
-            .from("public_profiles")
-            .select("id, full_name, trade_type")
-            .in("id", supplierIds);
-          if (profilesData) {
-            profilesById = Object.fromEntries(profilesData.map((p: any) => [p.id, p]));
-          }
-        }
-
-        const enriched = partsData.map((p: any) => ({
-          ...p,
-          public_profiles: profilesById[p.supplier_id] ?? null,
-        }));
-
-        // Duplicate the list so the marquee can scroll seamlessly
-        setBoostedParts([...enriched, ...enriched]);
-      } catch (e) {
-        console.error("Error fetching boosted parts:", e);
-        setBoostedParts([]);
-      } finally {
-        setBoostedLoading(false);
-      }
-    };
-
-    fetchBoostedParts();
-  }, []);
 
   if (loading) {
     return (
