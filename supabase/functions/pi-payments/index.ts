@@ -53,6 +53,76 @@ async function verifyPiUser(accessToken: string): Promise<{ uid: string; usernam
   }
 }
 
+async function finalizeAdPlacement(adId: string, paymentRecId: string) {
+  const { data: ad } = await supabase.from("ads").select("*").eq("id", adId).single();
+  if (!ad || ad.status !== "pending") return;
+
+  const { data: config } = await supabase.from("ad_slots_config").select("*").eq("id", 1).single();
+  if (!config) return;
+  const inc = 1 + Number(config.min_increment_pct) / 100;
+  const totalSlots = Number(config.total_slots);
+  const guaranteedMs = Number(config.guaranteed_hours) * 3600_000;
+
+  const { data: actives } = await supabase
+    .from("ads")
+    .select("id, user_id, bid_amount, guaranteed_until")
+    .eq("status", "active")
+    .order("bid_amount", { ascending: true });
+  const activeCount = actives?.length ?? 0;
+  const lowest = actives?.[0];
+  const now = new Date();
+
+  const activate = async () => {
+    await supabase.from("ads").update({
+      status: "active",
+      placed_at: now.toISOString(),
+      guaranteed_until: new Date(now.getTime() + guaranteedMs).toISOString(),
+      payment_id: paymentRecId,
+    }).eq("id", adId);
+    await supabase.from("bids_history").insert({
+      ad_id: adId, user_id: ad.user_id, amount: ad.bid_amount, action: "placed",
+    });
+  };
+
+  const wait = async () => {
+    await supabase.from("ads").update({
+      status: "waiting", payment_id: paymentRecId,
+    }).eq("id", adId);
+    await supabase.from("bids_history").insert({
+      ad_id: adId, user_id: ad.user_id, amount: ad.bid_amount, action: "placed",
+    });
+  };
+
+  if (activeCount < totalSlots && Number(ad.bid_amount) >= Number(config.reserve_price)) {
+    await activate();
+  } else if (
+    lowest &&
+    new Date(lowest.guaranteed_until).getTime() <= now.getTime() &&
+    Number(ad.bid_amount) >= Number(lowest.bid_amount) * inc
+  ) {
+    // Displace lowest
+    await supabase.from("ads").update({ status: "expired", slot_position: null }).eq("id", lowest.id);
+    await supabase.from("bids_history").insert({
+      ad_id: lowest.id, user_id: lowest.user_id, amount: lowest.bid_amount, action: "outbid",
+    });
+    await activate();
+  } else {
+    await wait();
+  }
+
+  // Recompute positions for active ads
+  const { data: refreshed } = await supabase
+    .from("ads")
+    .select("id, bid_amount")
+    .eq("status", "active")
+    .order("bid_amount", { ascending: false });
+  if (refreshed) {
+    for (let i = 0; i < refreshed.length; i++) {
+      await supabase.from("ads").update({ slot_position: i + 1 }).eq("id", refreshed[i].id);
+    }
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -158,6 +228,12 @@ Deno.serve(async (req) => {
       if (rec?.product_type === "listing_boost" && rec?.part_id) {
         const until = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
         await supabase.from("parts").update({ boosted_until: until }).eq("id", rec.part_id);
+      }
+
+      // Product fulfillment: Ad Slot bid -> finalize ad placement
+      const adId = rec?.metadata?.adId as string | undefined;
+      if (rec?.product_type === "ad_slot" && adId) {
+        await finalizeAdPlacement(adId, rec.id);
       }
 
       return json({ success: true });
