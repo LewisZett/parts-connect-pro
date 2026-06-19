@@ -14,6 +14,134 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_slots_config: {
+        Row: {
+          guaranteed_hours: number
+          id: number
+          min_increment_pct: number
+          reserve_price: number
+          total_slots: number
+          updated_at: string
+        }
+        Insert: {
+          guaranteed_hours?: number
+          id?: number
+          min_increment_pct?: number
+          reserve_price?: number
+          total_slots?: number
+          updated_at?: string
+        }
+        Update: {
+          guaranteed_hours?: number
+          id?: number
+          min_increment_pct?: number
+          reserve_price?: number
+          total_slots?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ads: {
+        Row: {
+          bid_amount: number
+          business_name: string
+          created_at: string
+          guaranteed_until: string | null
+          id: string
+          image_url: string | null
+          link_url: string | null
+          part_id: string | null
+          payment_id: string | null
+          placed_at: string | null
+          slot_position: number | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bid_amount: number
+          business_name: string
+          created_at?: string
+          guaranteed_until?: string | null
+          id?: string
+          image_url?: string | null
+          link_url?: string | null
+          part_id?: string | null
+          payment_id?: string | null
+          placed_at?: string | null
+          slot_position?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bid_amount?: number
+          business_name?: string
+          created_at?: string
+          guaranteed_until?: string | null
+          id?: string
+          image_url?: string | null
+          link_url?: string | null
+          part_id?: string | null
+          payment_id?: string | null
+          placed_at?: string | null
+          slot_position?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ads_part_id_fkey"
+            columns: ["part_id"]
+            isOneToOne: false
+            referencedRelation: "parts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ads_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "pi_payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bids_history: {
+        Row: {
+          action: string
+          ad_id: string
+          amount: number
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          ad_id: string
+          amount: number
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          ad_id?: string
+          amount?: number
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bids_history_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "ads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matches: {
         Row: {
           created_at: string | null
@@ -381,6 +509,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       public_profiles: {
@@ -415,9 +564,16 @@ export type Database = {
         Args: { p_ip_address: string; p_user_id: string }
         Returns: Json
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -544,6 +700,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
